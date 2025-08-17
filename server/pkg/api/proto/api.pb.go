@@ -163,8 +163,9 @@ const file_proto_api_proto_rawDesc = "" +
 	"\x05login\x18\x01 \x01(\tR\x05login\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\"!\n" +
 	"\rLoginResponse\x12\x10\n" +
-	"\x03jwt\x18\x01 \x01(\tR\x03jwt2=\n" +
-	"\vPassManager\x12.\n" +
+	"\x03jwt\x18\x01 \x01(\tR\x03jwt2w\n" +
+	"\x12PassManagerService\x121\n" +
+	"\bRegister\x12\x11.api.LoginRequest\x1a\x12.api.LoginResponse\x12.\n" +
 	"\x05Login\x12\x11.api.LoginRequest\x1a\x12.api.LoginResponseB\vZ\tapi/protob\x06proto3"
 
 var (
@@ -186,10 +187,12 @@ var file_proto_api_proto_goTypes = []any{
 	(*LoginResponse)(nil), // 2: api.LoginResponse
 }
 var file_proto_api_proto_depIdxs = []int32{
-	1, // 0: api.PassManager.Login:input_type -> api.LoginRequest
-	2, // 1: api.PassManager.Login:output_type -> api.LoginResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	1, // 0: api.PassManagerService.Register:input_type -> api.LoginRequest
+	1, // 1: api.PassManagerService.Login:input_type -> api.LoginRequest
+	2, // 2: api.PassManagerService.Register:output_type -> api.LoginResponse
+	2, // 3: api.PassManagerService.Login:output_type -> api.LoginResponse
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name

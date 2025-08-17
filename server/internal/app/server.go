@@ -14,10 +14,9 @@ import (
 	"github.com/VicShved/pass-manager/server/pkg/logger"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
-	"google.golang.org/grpc"
 )
 
-func ServerRun() {
+func RunServer() {
 	// Get app config
 	var conf = config.GetServerConfig()
 
@@ -35,7 +34,7 @@ func ServerRun() {
 	// Bussiness layer
 	serv := service.GetService(repo, conf)
 
-	server, err := srv.GetServer(serv, conf)
+	gserver, err := srv.GetServer(serv, conf)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,14 +43,14 @@ func ServerRun() {
 	exitChan := make(chan os.Signal, 3)
 	signal.Notify(exitChan, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 
-	go func(server *grpc.Server) {
+	go func(gserver *srv.GServer) {
 		<-exitChan
 		logger.Log.Info("Catch syscall sygnal")
 
 		// Shutdown
 		grp := errgroup.Group{}
 		grp.Go(func() error {
-			server.GracefulStop()
+			gserver.GracefulStop()
 			return nil
 		})
 		if err := grp.Wait(); err != nil {
@@ -59,21 +58,22 @@ func ServerRun() {
 		}
 		logger.Log.Info("Send message for shutdown gracefully")
 		close(idleChan)
-	}(server)
+	}(gserver)
 
-	lis, err := net.Listen("tcp", ":443")
+	lis, err := net.Listen("tcp", conf.ServerAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
 	grp := errgroup.Group{}
 	// run grpc server
 	grp.Go(func() error {
-		return server.Serve(lis)
+		return gserver.StartServe(&lis, conf)
 	})
 	err = grp.Wait()
 
 	// Shutdown gracefully
 	<-idleChan
+	gserver.GracefulStop()
 	repo.CloseConn()
 	logger.Log.Info("Server Shutdown gracefully")
 

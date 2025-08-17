@@ -9,14 +9,16 @@ message Empty {
 }
 
 message LoginRequest {
-    string login=1;
-    string password=2;
+    string login = 1;
+    string password = 2;
 }
 
 message LoginResponse {
-    string jwt=1;
+    string jwt = 1;
 }
 
-service PassManager {
+service PassManagerService {
+    rpc Register(LoginRequest) returns (LoginResponse);
     rpc Login(LoginRequest) returns (LoginResponse);
 }
+

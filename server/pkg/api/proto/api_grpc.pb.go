@@ -19,101 +19,139 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	PassManager_Login_FullMethodName = "/api.PassManager/Login"
+	PassManagerService_Register_FullMethodName = "/api.PassManagerService/Register"
+	PassManagerService_Login_FullMethodName    = "/api.PassManagerService/Login"
 )
 
-// PassManagerClient is the client API for PassManager service.
+// PassManagerServiceClient is the client API for PassManagerService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type PassManagerClient interface {
+type PassManagerServiceClient interface {
+	Register(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 }
 
-type passManagerClient struct {
+type passManagerServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewPassManagerClient(cc grpc.ClientConnInterface) PassManagerClient {
-	return &passManagerClient{cc}
+func NewPassManagerServiceClient(cc grpc.ClientConnInterface) PassManagerServiceClient {
+	return &passManagerServiceClient{cc}
 }
 
-func (c *passManagerClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
+func (c *passManagerServiceClient) Register(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(LoginResponse)
-	err := c.cc.Invoke(ctx, PassManager_Login_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, PassManagerService_Register_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// PassManagerServer is the server API for PassManager service.
-// All implementations must embed UnimplementedPassManagerServer
-// for forward compatibility.
-type PassManagerServer interface {
-	Login(context.Context, *LoginRequest) (*LoginResponse, error)
-	mustEmbedUnimplementedPassManagerServer()
+func (c *passManagerServiceClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LoginResponse)
+	err := c.cc.Invoke(ctx, PassManagerService_Login_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
-// UnimplementedPassManagerServer must be embedded to have
+// PassManagerServiceServer is the server API for PassManagerService service.
+// All implementations must embed UnimplementedPassManagerServiceServer
+// for forward compatibility.
+type PassManagerServiceServer interface {
+	Register(context.Context, *LoginRequest) (*LoginResponse, error)
+	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	mustEmbedUnimplementedPassManagerServiceServer()
+}
+
+// UnimplementedPassManagerServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedPassManagerServer struct{}
+type UnimplementedPassManagerServiceServer struct{}
 
-func (UnimplementedPassManagerServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
+func (UnimplementedPassManagerServiceServer) Register(context.Context, *LoginRequest) (*LoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
+}
+func (UnimplementedPassManagerServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedPassManagerServer) mustEmbedUnimplementedPassManagerServer() {}
-func (UnimplementedPassManagerServer) testEmbeddedByValue()                     {}
+func (UnimplementedPassManagerServiceServer) mustEmbedUnimplementedPassManagerServiceServer() {}
+func (UnimplementedPassManagerServiceServer) testEmbeddedByValue()                            {}
 
-// UnsafePassManagerServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to PassManagerServer will
+// UnsafePassManagerServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to PassManagerServiceServer will
 // result in compilation errors.
-type UnsafePassManagerServer interface {
-	mustEmbedUnimplementedPassManagerServer()
+type UnsafePassManagerServiceServer interface {
+	mustEmbedUnimplementedPassManagerServiceServer()
 }
 
-func RegisterPassManagerServer(s grpc.ServiceRegistrar, srv PassManagerServer) {
-	// If the following call pancis, it indicates UnimplementedPassManagerServer was
+func RegisterPassManagerServiceServer(s grpc.ServiceRegistrar, srv PassManagerServiceServer) {
+	// If the following call pancis, it indicates UnimplementedPassManagerServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&PassManager_ServiceDesc, srv)
+	s.RegisterService(&PassManagerService_ServiceDesc, srv)
 }
 
-func _PassManager_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _PassManagerService_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LoginRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PassManagerServer).Login(ctx, in)
+		return srv.(PassManagerServiceServer).Register(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: PassManager_Login_FullMethodName,
+		FullMethod: PassManagerService_Register_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PassManagerServer).Login(ctx, req.(*LoginRequest))
+		return srv.(PassManagerServiceServer).Register(ctx, req.(*LoginRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// PassManager_ServiceDesc is the grpc.ServiceDesc for PassManager service.
+func _PassManagerService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PassManagerServiceServer).Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PassManagerService_Login_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PassManagerServiceServer).Login(ctx, req.(*LoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// PassManagerService_ServiceDesc is the grpc.ServiceDesc for PassManagerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var PassManager_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.PassManager",
-	HandlerType: (*PassManagerServer)(nil),
+var PassManagerService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "api.PassManagerService",
+	HandlerType: (*PassManagerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "Register",
+			Handler:    _PassManagerService_Register_Handler,
+		},
+		{
 			MethodName: "Login",
-			Handler:    _PassManager_Login_Handler,
+			Handler:    _PassManagerService_Login_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

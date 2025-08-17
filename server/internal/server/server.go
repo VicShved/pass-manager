@@ -1,9 +1,13 @@
 package server
 
 import (
+	"net"
+
 	"github.com/VicShved/pass-manager/server/internal/service"
 	pb "github.com/VicShved/pass-manager/server/pkg/api/proto"
 	"github.com/VicShved/pass-manager/server/pkg/config"
+	"github.com/VicShved/pass-manager/server/pkg/logger"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/acme/autocert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -12,9 +16,10 @@ import (
 
 // GServer
 type GServer struct {
-	pb.UnimplementedPassManagerServer
-	serv *service.Service
-	conf *config.ServerConfigStruct
+	pb.UnimplementedPassManagerServiceServer
+	serv     *service.PassManageService
+	server   *grpc.Server
+	listener *net.Listener
 }
 
 func getTLSCreds(domain string) grpc.ServerOption {
@@ -30,18 +35,30 @@ func getTLSCreds(domain string) grpc.ServerOption {
 
 }
 
-func GetServer(serv *service.Service, conf *config.ServerConfigStruct) (*grpc.Server, error) {
+func GetServer(serv *service.PassManageService, conf *config.ServerConfigStruct) (*GServer, error) {
 	keepAlive := grpc.KeepaliveParams(keepalive.ServerParameters{MaxConnectionAgeGrace: 84000})
-	creds := getTLSCreds(conf.BaseURL)
+	// creds := getTLSCreds(conf.BaseURL)
 	server := grpc.NewServer(
-		creds,
-		grpc.ChainUnaryInterceptor(AuthUnaryInterceptor),
+		// creds,
+		// grpc.ChainUnaryInterceptor(AuthUnaryInterceptor),
 		keepAlive,
 		grpc.MaxRecvMsgSize(1024*1024*1024),
 		grpc.MaxSendMsgSize(1024*1024*1024),
 		grpc.ConnectionTimeout(60000),
 	)
-	gServer := GServer{serv: serv, conf: conf}
-	pb.RegisterPassManagerServer(server, &gServer)
-	return server, nil
+	gServer := GServer{serv: serv, server: server}
+	pb.RegisterPassManagerServiceServer(server, gServer)
+	return &gServer, nil
+}
+
+func (s *GServer) StartServe(lis *net.Listener, conf *config.ServerConfigStruct) error {
+	logger.Log.Debug("StartServe", zap.String("conf.ServerAddress", conf.ServerAddress))
+	s.listener = lis
+	return s.server.Serve(*lis)
+}
+
+func (s *GServer) GracefulStop() {
+	(*s.listener).Close()
+	s.server.GracefulStop()
+
 }

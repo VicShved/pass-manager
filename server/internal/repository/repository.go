@@ -6,9 +6,10 @@ import (
 
 // RepoInterface interface
 type RepoInterface interface {
-	Empty() error
-	CloseConn()
+	Register(userID string, login string, hashPassword string) error
+	Login(login string, hashPassword string) (string, error)
+	CloseConn() error
 }
 
-// ErrPKConflict
-var ErrPKConflict = errors.New("PK conflict")
+var ErrLoginConflict = errors.New("Login conflict")
+var ErrLoginPassword = errors.New("Login/Password error")
