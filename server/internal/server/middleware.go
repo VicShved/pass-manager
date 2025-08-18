@@ -7,6 +7,7 @@ import (
 	"github.com/VicShved/pass-manager/server/pkg/config"
 	"github.com/VicShved/pass-manager/server/pkg/logger"
 	"github.com/golang-jwt/jwt/v4"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -22,6 +23,7 @@ func AuthUnaryInterceptor(ctx context.Context, req interface{}, info *grpc.Unary
 		logger.Log.Warn("authUnaryInterceptor hasnt metadata")
 	}
 	tokens := md.Get(authorizationTokenName)
+	logger.Log.Debug("AuthUnaryInterceptor", zap.Any("Tokens=", tokens))
 	if len(tokens) > 0 {
 		token, userID, err = service.ParseTokenUserID(tokens[0], config.ServerConfig.SecretKey)
 		if err != nil {
@@ -33,7 +35,7 @@ func AuthUnaryInterceptor(ctx context.Context, req interface{}, info *grpc.Unary
 			userID = ""
 		}
 	}
-	// Если кука не содержит ид пользователя, то не сильно ругаюсь
+	// Если токен не содержит ид пользователя, то не сильно ругаюсь
 	if userID == "" {
 		logger.Log.Warn("Empty userID")
 	}

@@ -111,7 +111,7 @@ func (x *LoginRequest) GetPassword() string {
 
 type LoginResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Jwt           string                 `protobuf:"bytes,1,opt,name=jwt,proto3" json:"jwt,omitempty"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -146,9 +146,113 @@ func (*LoginResponse) Descriptor() ([]byte, []int) {
 	return file_proto_api_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *LoginResponse) GetJwt() string {
+func (x *LoginResponse) GetToken() string {
 	if x != nil {
-		return x.Jwt
+		return x.Token
+	}
+	return ""
+}
+
+type PostCardRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CardNumber    string                 `protobuf:"bytes,1,opt,name=card_number,json=cardNumber,proto3" json:"card_number,omitempty"`
+	Valid         string                 `protobuf:"bytes,2,opt,name=valid,proto3" json:"valid,omitempty"`
+	Code          string                 `protobuf:"bytes,3,opt,name=code,proto3" json:"code,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PostCardRequest) Reset() {
+	*x = PostCardRequest{}
+	mi := &file_proto_api_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PostCardRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PostCardRequest) ProtoMessage() {}
+
+func (x *PostCardRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_api_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PostCardRequest.ProtoReflect.Descriptor instead.
+func (*PostCardRequest) Descriptor() ([]byte, []int) {
+	return file_proto_api_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *PostCardRequest) GetCardNumber() string {
+	if x != nil {
+		return x.CardNumber
+	}
+	return ""
+}
+
+func (x *PostCardRequest) GetValid() string {
+	if x != nil {
+		return x.Valid
+	}
+	return ""
+}
+
+func (x *PostCardRequest) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
+type PostCardResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PostCardResponse) Reset() {
+	*x = PostCardResponse{}
+	mi := &file_proto_api_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PostCardResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PostCardResponse) ProtoMessage() {}
+
+func (x *PostCardResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_api_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PostCardResponse.ProtoReflect.Descriptor instead.
+func (*PostCardResponse) Descriptor() ([]byte, []int) {
+	return file_proto_api_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *PostCardResponse) GetId() string {
+	if x != nil {
+		return x.Id
 	}
 	return ""
 }
@@ -161,12 +265,20 @@ const file_proto_api_proto_rawDesc = "" +
 	"\x05Empty\"@\n" +
 	"\fLoginRequest\x12\x14\n" +
 	"\x05login\x18\x01 \x01(\tR\x05login\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"!\n" +
-	"\rLoginResponse\x12\x10\n" +
-	"\x03jwt\x18\x01 \x01(\tR\x03jwt2w\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"%\n" +
+	"\rLoginResponse\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\"\\\n" +
+	"\x0fPostCardRequest\x12\x1f\n" +
+	"\vcard_number\x18\x01 \x01(\tR\n" +
+	"cardNumber\x12\x14\n" +
+	"\x05valid\x18\x02 \x01(\tR\x05valid\x12\x12\n" +
+	"\x04code\x18\x03 \x01(\tR\x04code\"\"\n" +
+	"\x10PostCardResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id2\xb0\x01\n" +
 	"\x12PassManagerService\x121\n" +
 	"\bRegister\x12\x11.api.LoginRequest\x1a\x12.api.LoginResponse\x12.\n" +
-	"\x05Login\x12\x11.api.LoginRequest\x1a\x12.api.LoginResponseB\vZ\tapi/protob\x06proto3"
+	"\x05Login\x12\x11.api.LoginRequest\x1a\x12.api.LoginResponse\x127\n" +
+	"\bPostCard\x12\x14.api.PostCardRequest\x1a\x15.api.PostCardResponseB\vZ\tapi/protob\x06proto3"
 
 var (
 	file_proto_api_proto_rawDescOnce sync.Once
@@ -180,19 +292,23 @@ func file_proto_api_proto_rawDescGZIP() []byte {
 	return file_proto_api_proto_rawDescData
 }
 
-var file_proto_api_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_proto_api_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_proto_api_proto_goTypes = []any{
-	(*Empty)(nil),         // 0: api.Empty
-	(*LoginRequest)(nil),  // 1: api.LoginRequest
-	(*LoginResponse)(nil), // 2: api.LoginResponse
+	(*Empty)(nil),            // 0: api.Empty
+	(*LoginRequest)(nil),     // 1: api.LoginRequest
+	(*LoginResponse)(nil),    // 2: api.LoginResponse
+	(*PostCardRequest)(nil),  // 3: api.PostCardRequest
+	(*PostCardResponse)(nil), // 4: api.PostCardResponse
 }
 var file_proto_api_proto_depIdxs = []int32{
 	1, // 0: api.PassManagerService.Register:input_type -> api.LoginRequest
 	1, // 1: api.PassManagerService.Login:input_type -> api.LoginRequest
-	2, // 2: api.PassManagerService.Register:output_type -> api.LoginResponse
-	2, // 3: api.PassManagerService.Login:output_type -> api.LoginResponse
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
+	3, // 2: api.PassManagerService.PostCard:input_type -> api.PostCardRequest
+	2, // 3: api.PassManagerService.Register:output_type -> api.LoginResponse
+	2, // 4: api.PassManagerService.Login:output_type -> api.LoginResponse
+	4, // 5: api.PassManagerService.PostCard:output_type -> api.PostCardResponse
+	3, // [3:6] is the sub-list for method output_type
+	0, // [0:3] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -209,7 +325,7 @@ func file_proto_api_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_api_proto_rawDesc), len(file_proto_api_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

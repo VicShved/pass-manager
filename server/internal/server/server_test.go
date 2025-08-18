@@ -30,7 +30,7 @@ var lis *bufconn.Listener
 var serverAddress = ":8080"
 var secretKey = "VerySecret"
 
-func setup() *GServer {
+func setup() (*GServer, *bufconn.Listener) {
 	err := logger.InitLogger("DEBUG")
 	if err != nil {
 		log.Fatal(err.Error())
@@ -47,18 +47,22 @@ func setup() *GServer {
 			log.Fatalf("Start serve error")
 		}
 	}()
-	return gserver
+	return gserver, lis
+}
+
+func close(gserver *GServer, lis *bufconn.Listener) {
+	lis.Close()
+	gserver.server.GracefulStop()
 }
 
 func TestMain(m *testing.M) {
-	setup()
-	// time.Sleep(3 * time.Second)
+	gserver, lis := setup()
 	code := m.Run()
-	// gserver.GracefulStop()
+	close(gserver, lis)
 	os.Exit(code)
 }
 
-func doLogin(login string, password string) (uint32, string, error) {
+func doLogin(login string, password string) (codes.Code, string, error) {
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials((insecure.NewCredentials())))
 	// grpc.NewClient("bufnet", grpc.WithTransportCredentials((insecure.NewCredentials())))
@@ -68,24 +72,22 @@ func doLogin(login string, password string) (uint32, string, error) {
 	}
 	defer conn.Close()
 
-	c := pb.NewPassManagerServiceClient(conn)
+	client := pb.NewPassManagerServiceClient(conn)
 	// md := metadata.Pairs(middware.AuthorizationCookName, "")
 	var header metadata.MD
 	reqData := pb.LoginRequest{Login: login, Password: password}
-	resp, err := c.Login(ctx, &reqData)
-	grpcStatus := uint32(0)
+	resp, err := client.Login(ctx, &reqData, grpc.Header(&header))
+	grpcStatus := codes.OK
 	if status.Code(err) != codes.OK {
 		log.Printf(err.Error())
 		st, ok := status.FromError(err)
 		if ok {
-			grpcStatus = uint32(st.Code())
+			grpcStatus = st.Code()
 		}
 		return grpcStatus, "", err
 	}
-	fmt.Println("resp.Token=", resp.Jwt)
-	hAuthToken := header.Get(authorizationTokenName)
-	print("hAuthToken=", hAuthToken)
-	authToken := resp.Jwt
+	fmt.Println("resp.Token=", resp.Token)
+	authToken := header.Get(authorizationTokenName)[0]
 	if len(authToken) == 0 {
 		return 999, "", errors.New("Сервер не возвратил auth token")
 	}
@@ -100,7 +102,7 @@ func bufDialer(context.Context, string) (net.Conn, error) {
 func TestDoLogin(t *testing.T) {
 
 	type wont struct {
-		status   uint32
+		status   codes.Code
 		tokenStr string
 	}
 	var tests = []struct {
@@ -114,28 +116,154 @@ func TestDoLogin(t *testing.T) {
 			login:    "1",
 			password: "password1",
 			wont: wont{
-				status:   uint32(0),
+				status:   codes.OK,
 				tokenStr: "",
 			},
 		},
-		// {
-		// 	name:     "bad request",
-		// 	login:    "999",
-		// 	password: "password999",
-		// 	wont: wont{
-		// 		status:   3,
-		// 		tokenStr: "",
-		// 	},
-		// },
+		{
+			name:     "bad password",
+			login:    "1",
+			password: "passwordBad",
+			wont: wont{
+				status:   codes.PermissionDenied,
+				tokenStr: "",
+			},
+		},
+		{
+			name:     "bad login",
+			login:    "bad",
+			password: "password1",
+			wont: wont{
+				status:   codes.PermissionDenied,
+				tokenStr: "",
+			},
+		},
 	}
 	for _, tst := range tests {
 		statusCode, tokenStr, _ := doLogin(tst.login, tst.password)
 		assert.Equal(t, tst.wont.status, statusCode)
-		if statusCode == 0 {
+		if statusCode == codes.OK {
 			fmt.Println("tokenStr=", tokenStr)
 			token, _, err := service.ParseTokenUserID(tokenStr, secretKey)
 			assert.Nil(t, err, "Err")
 			assert.True(t, token.Valid)
+		}
+	}
+}
+
+func doRegister(login string, password string) (codes.Code, string, error) {
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials((insecure.NewCredentials())))
+	if err != nil {
+		log.Fatal(err)
+		return 999, "", err
+	}
+	defer conn.Close()
+
+	client := pb.NewPassManagerServiceClient(conn)
+	// md := metadata.Pairs(middware.AuthorizationCookName, "")
+	var header metadata.MD
+	reqData := pb.LoginRequest{Login: login, Password: password}
+	resp, err := client.Register(ctx, &reqData, grpc.Header(&header))
+	grpcStatus := codes.OK
+	if status.Code(err) != codes.OK {
+		log.Printf(err.Error())
+		st, ok := status.FromError(err)
+		if ok {
+			grpcStatus = st.Code()
+		}
+		return grpcStatus, "", err
+	}
+	fmt.Println("resp.Token=", resp.Token)
+	authToken := header.Get(authorizationTokenName)[0]
+	if len(authToken) == 0 {
+		return 999, "", errors.New("Сервер не возвратил auth token")
+	}
+	fmt.Println("authToken ", authToken)
+	return 0, authToken, nil
+}
+
+func doPostCard(tokenStr string) (codes.Code, string, error) {
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials((insecure.NewCredentials())))
+	if err != nil {
+		log.Fatal(err)
+		return 999, "", err
+	}
+	defer conn.Close()
+
+	client := pb.NewPassManagerServiceClient(conn)
+	md := metadata.Pairs(authorizationTokenName, tokenStr)
+	ctx = metadata.NewOutgoingContext(ctx, md)
+	var headers metadata.MD
+	reqData := pb.PostCardRequest{CardNumber: "0110-0220", Valid: "03/30", Code: "111"}
+	_, err = client.PostCard(ctx, &reqData, grpc.Header(&headers))
+	grpcStatus := codes.OK
+	if status.Code(err) != codes.OK {
+		log.Printf(err.Error())
+		st, ok := status.FromError(err)
+		if ok {
+			grpcStatus = st.Code()
+		}
+		return grpcStatus, "", err
+	}
+	authToken := md.Get(authorizationTokenName)[0]
+	if len(authToken) == 0 {
+		return 999, "", errors.New("Сервер не возвратил auth token")
+	}
+	fmt.Println("authToken ", authToken)
+	return 0, authToken, nil
+}
+
+func TestDoRegister(t *testing.T) {
+
+	type wont struct {
+		status   codes.Code
+		tokenStr string
+	}
+	var tests = []struct {
+		name     string
+		login    string
+		password string
+		wont     wont
+	}{
+		{
+			name:     "bad register",
+			login:    "1",
+			password: "password1",
+			wont: wont{
+				status:   codes.InvalidArgument,
+				tokenStr: "",
+			},
+		},
+		{
+			name:     "good register",
+			login:    "2",
+			password: "password2",
+			wont: wont{
+				status:   codes.OK,
+				tokenStr: "",
+			},
+		},
+	}
+	for _, tst := range tests {
+		statusCode, tokenStr, _ := doRegister(tst.login, tst.password)
+		assert.Equal(t, tst.wont.status, statusCode)
+		if statusCode == codes.OK {
+			fmt.Println("tokenStr=", tokenStr)
+			token, _, err := service.ParseTokenUserID(tokenStr, secretKey)
+			assert.Nil(t, err, "Err")
+			assert.True(t, token.Valid)
+			// test new login exists
+			statusCode, tokenStr, err = doLogin(tst.login, tst.password)
+			assert.Nil(t, err)
+			assert.Equal(t, statusCode, codes.OK)
+			if (err == nil) && (statusCode == codes.OK) {
+				fmt.Println("tokenStr for doPostCard=", tokenStr)
+				statusCode, _, err = doPostCard(tokenStr)
+				assert.Nil(t, err)
+				assert.Equal(t, statusCode, codes.OK)
+			}
 		}
 	}
 }

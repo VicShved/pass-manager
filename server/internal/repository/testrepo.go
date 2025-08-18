@@ -6,7 +6,18 @@ import (
 	"go.uber.org/zap"
 )
 
-var users = map[string][3]string{"1": {"1", "CxTVAaWURCoBxoWVQbyz6BZNGD0yk3uFGDVEL2nVyU4", "userID1"}}
+type userStruct struct {
+	login        string
+	hashPassword string
+	userID       string
+}
+
+var users = map[string]userStruct{
+	"1": {
+		login:        "1",
+		hashPassword: "CxTVAaWURCoBxoWVQbyz6BZNGD0yk3uFGDVEL2nVyU4",
+		userID:       "userID1"},
+}
 
 type TestRepository struct {
 	conf *config.ServerConfigStruct
@@ -26,8 +37,12 @@ func (r TestRepository) CloseConn() error {
 }
 
 func (r TestRepository) Register(userID string, login string, hashPassword string) error {
-	logger.Log.Debug("Register", zap.String("login", login), zap.String("hashPassword", hashPassword))
-	// users[login] = make([]string{login, hashPassword, userID})
+	logger.Log.Debug("Register user = ", zap.String("userID", userID), zap.String("login", login), zap.String("hashPassword", hashPassword))
+	_, exists := users[login]
+	if exists {
+		return ErrLoginConflict
+	}
+	users[login] = userStruct{login: login, hashPassword: hashPassword, userID: userID}
 	return nil
 }
 
@@ -37,5 +52,8 @@ func (r TestRepository) Login(login string, hashPassword string) (string, error)
 	if !exists {
 		return "", ErrLoginPassword
 	}
-	return value[2], nil
+	if value.hashPassword != hashPassword {
+		return "", ErrLoginPassword
+	}
+	return value.userID, nil
 }

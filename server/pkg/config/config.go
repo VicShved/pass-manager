@@ -14,8 +14,8 @@ type ServerConfigStruct struct {
 	DBDSN           string `json:"database_dsn"`
 	SecretKey       string
 	LogLevel        string
-	// EnableHTTPS     bool `json:"enable_https"`
-	ConfigFileName string
+	EnableTLS       bool `json:"enable_tls"`
+	ConfigFileName  string
 	// TrustedSubnet   string `json:"trusted_subnet"`
 }
 
@@ -26,7 +26,7 @@ func getConfigArgsEnvVars() *ServerConfigStruct {
 	flag.StringVar(&ServerConfig.ServerAddress, "a", "localhost:8080", "start base url")
 	// flag.StringVar(&ServerConfig.BaseURL, "b", "http://localhost:8080", "result base url")
 	flag.StringVar(&ServerConfig.FileStoragePath, "f", "", "file storage path")
-	// flag.BoolVar(&ServerConfig.EnableHTTPS, "s", false, "enable https")
+	flag.BoolVar(&ServerConfig.EnableTLS, "s", false, "enable tls")
 	flag.StringVar(&ServerConfig.DBDSN, "d", "", "DataBase DSN")
 	flag.StringVar(&ServerConfig.SecretKey, "k", "VeryImpotantSecretKey.YesYes", "Secret key")
 	flag.StringVar(&ServerConfig.LogLevel, "l", "INFO", "Log level")

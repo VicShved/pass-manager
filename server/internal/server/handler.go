@@ -40,7 +40,7 @@ func (s GServer) Register(ctx context.Context, in *pb.LoginRequest) (*pb.LoginRe
 	authHeader := metadata.Pairs(authorizationTokenName, tokenStr)
 	_ = grpc.SetHeader(ctx, authHeader)
 
-	response.Jwt = tokenStr
+	response.Token = tokenStr
 	return &response, nil
 }
 
@@ -60,6 +60,15 @@ func (s GServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginRespo
 	authHeader := metadata.Pairs(authorizationTokenName, tokenStr)
 	_ = grpc.SetHeader(ctx, authHeader)
 
-	response.Jwt = tokenStr
+	response.Token = tokenStr
+	return &response, nil
+}
+
+func (s GServer) PostCard(ctx context.Context, in *pb.PostCardRequest) (*pb.PostCardResponse, error) {
+	var response pb.PostCardResponse
+	userID := getUserID(ctx)
+	if userID == "" {
+		return nil, status.Errorf(codes.PermissionDenied, "Отсутствует токен/Не определен пользователь")
+	}
 	return &response, nil
 }

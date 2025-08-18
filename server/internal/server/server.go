@@ -40,7 +40,7 @@ func GetServer(serv *service.PassManageService, conf *config.ServerConfigStruct)
 	// creds := getTLSCreds(conf.BaseURL)
 	server := grpc.NewServer(
 		// creds,
-		// grpc.ChainUnaryInterceptor(AuthUnaryInterceptor),
+		grpc.ChainUnaryInterceptor(AuthUnaryInterceptor),
 		keepAlive,
 		grpc.MaxRecvMsgSize(1024*1024*1024),
 		grpc.MaxSendMsgSize(1024*1024*1024),

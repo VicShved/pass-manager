@@ -14,11 +14,22 @@ message LoginRequest {
 }
 
 message LoginResponse {
-    string jwt = 1;
+    string token = 1;
+}
+
+message PostCardRequest {
+    string  card_number = 1;
+    string  valid = 2;
+    string  code = 3;
+}
+
+message PostCardResponse {
+    string id = 1;
 }
 
 service PassManagerService {
     rpc Register(LoginRequest) returns (LoginResponse);
     rpc Login(LoginRequest) returns (LoginResponse);
+    rpc PostCard(PostCardRequest) returns (PostCardResponse);
 }
 
