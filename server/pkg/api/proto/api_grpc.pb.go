@@ -22,6 +22,7 @@ const (
 	PassManagerService_Register_FullMethodName = "/api.PassManagerService/Register"
 	PassManagerService_Login_FullMethodName    = "/api.PassManagerService/Login"
 	PassManagerService_PostCard_FullMethodName = "/api.PassManagerService/PostCard"
+	PassManagerService_PostFile_FullMethodName = "/api.PassManagerService/PostFile"
 )
 
 // PassManagerServiceClient is the client API for PassManagerService service.
@@ -31,6 +32,7 @@ type PassManagerServiceClient interface {
 	Register(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	PostCard(ctx context.Context, in *PostCardRequest, opts ...grpc.CallOption) (*PostCardResponse, error)
+	PostFile(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[PostFileRequest, PostFileResponse], error)
 }
 
 type passManagerServiceClient struct {
@@ -71,6 +73,19 @@ func (c *passManagerServiceClient) PostCard(ctx context.Context, in *PostCardReq
 	return out, nil
 }
 
+func (c *passManagerServiceClient) PostFile(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[PostFileRequest, PostFileResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &PassManagerService_ServiceDesc.Streams[0], PassManagerService_PostFile_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[PostFileRequest, PostFileResponse]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type PassManagerService_PostFileClient = grpc.ClientStreamingClient[PostFileRequest, PostFileResponse]
+
 // PassManagerServiceServer is the server API for PassManagerService service.
 // All implementations must embed UnimplementedPassManagerServiceServer
 // for forward compatibility.
@@ -78,6 +93,7 @@ type PassManagerServiceServer interface {
 	Register(context.Context, *LoginRequest) (*LoginResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	PostCard(context.Context, *PostCardRequest) (*PostCardResponse, error)
+	PostFile(grpc.ClientStreamingServer[PostFileRequest, PostFileResponse]) error
 	mustEmbedUnimplementedPassManagerServiceServer()
 }
 
@@ -96,6 +112,9 @@ func (UnimplementedPassManagerServiceServer) Login(context.Context, *LoginReques
 }
 func (UnimplementedPassManagerServiceServer) PostCard(context.Context, *PostCardRequest) (*PostCardResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PostCard not implemented")
+}
+func (UnimplementedPassManagerServiceServer) PostFile(grpc.ClientStreamingServer[PostFileRequest, PostFileResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method PostFile not implemented")
 }
 func (UnimplementedPassManagerServiceServer) mustEmbedUnimplementedPassManagerServiceServer() {}
 func (UnimplementedPassManagerServiceServer) testEmbeddedByValue()                            {}
@@ -172,6 +191,13 @@ func _PassManagerService_PostCard_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PassManagerService_PostFile_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(PassManagerServiceServer).PostFile(&grpc.GenericServerStream[PostFileRequest, PostFileResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type PassManagerService_PostFileServer = grpc.ClientStreamingServer[PostFileRequest, PostFileResponse]
+
 // PassManagerService_ServiceDesc is the grpc.ServiceDesc for PassManagerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -192,6 +218,12 @@ var PassManagerService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _PassManagerService_PostCard_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "PostFile",
+			Handler:       _PassManagerService_PostFile_Handler,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "proto/api.proto",
 }

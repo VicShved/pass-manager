@@ -257,6 +257,110 @@ func (x *PostCardResponse) GetId() string {
 	return ""
 }
 
+type PostFileRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Chunk         []byte                 `protobuf:"bytes,1,opt,name=chunk,proto3" json:"chunk,omitempty"`
+	FileName      string                 `protobuf:"bytes,2,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PostFileRequest) Reset() {
+	*x = PostFileRequest{}
+	mi := &file_proto_api_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PostFileRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PostFileRequest) ProtoMessage() {}
+
+func (x *PostFileRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_api_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PostFileRequest.ProtoReflect.Descriptor instead.
+func (*PostFileRequest) Descriptor() ([]byte, []int) {
+	return file_proto_api_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *PostFileRequest) GetChunk() []byte {
+	if x != nil {
+		return x.Chunk
+	}
+	return nil
+}
+
+func (x *PostFileRequest) GetFileName() string {
+	if x != nil {
+		return x.FileName
+	}
+	return ""
+}
+
+type PostFileResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	FileName      string                 `protobuf:"bytes,1,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
+	FileSize      uint64                 `protobuf:"varint,2,opt,name=file_size,json=fileSize,proto3" json:"file_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PostFileResponse) Reset() {
+	*x = PostFileResponse{}
+	mi := &file_proto_api_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PostFileResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PostFileResponse) ProtoMessage() {}
+
+func (x *PostFileResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_api_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PostFileResponse.ProtoReflect.Descriptor instead.
+func (*PostFileResponse) Descriptor() ([]byte, []int) {
+	return file_proto_api_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *PostFileResponse) GetFileName() string {
+	if x != nil {
+		return x.FileName
+	}
+	return ""
+}
+
+func (x *PostFileResponse) GetFileSize() uint64 {
+	if x != nil {
+		return x.FileSize
+	}
+	return 0
+}
+
 var File_proto_api_proto protoreflect.FileDescriptor
 
 const file_proto_api_proto_rawDesc = "" +
@@ -274,11 +378,18 @@ const file_proto_api_proto_rawDesc = "" +
 	"\x05valid\x18\x02 \x01(\tR\x05valid\x12\x12\n" +
 	"\x04code\x18\x03 \x01(\tR\x04code\"\"\n" +
 	"\x10PostCardResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id2\xb0\x01\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"D\n" +
+	"\x0fPostFileRequest\x12\x14\n" +
+	"\x05chunk\x18\x01 \x01(\fR\x05chunk\x12\x1b\n" +
+	"\tfile_name\x18\x02 \x01(\tR\bfileName\"L\n" +
+	"\x10PostFileResponse\x12\x1b\n" +
+	"\tfile_name\x18\x01 \x01(\tR\bfileName\x12\x1b\n" +
+	"\tfile_size\x18\x02 \x01(\x04R\bfileSize2\xeb\x01\n" +
 	"\x12PassManagerService\x121\n" +
 	"\bRegister\x12\x11.api.LoginRequest\x1a\x12.api.LoginResponse\x12.\n" +
 	"\x05Login\x12\x11.api.LoginRequest\x1a\x12.api.LoginResponse\x127\n" +
-	"\bPostCard\x12\x14.api.PostCardRequest\x1a\x15.api.PostCardResponseB\vZ\tapi/protob\x06proto3"
+	"\bPostCard\x12\x14.api.PostCardRequest\x1a\x15.api.PostCardResponse\x129\n" +
+	"\bPostFile\x12\x14.api.PostFileRequest\x1a\x15.api.PostFileResponse(\x01B\vZ\tapi/protob\x06proto3"
 
 var (
 	file_proto_api_proto_rawDescOnce sync.Once
@@ -292,23 +403,27 @@ func file_proto_api_proto_rawDescGZIP() []byte {
 	return file_proto_api_proto_rawDescData
 }
 
-var file_proto_api_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_proto_api_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_proto_api_proto_goTypes = []any{
 	(*Empty)(nil),            // 0: api.Empty
 	(*LoginRequest)(nil),     // 1: api.LoginRequest
 	(*LoginResponse)(nil),    // 2: api.LoginResponse
 	(*PostCardRequest)(nil),  // 3: api.PostCardRequest
 	(*PostCardResponse)(nil), // 4: api.PostCardResponse
+	(*PostFileRequest)(nil),  // 5: api.PostFileRequest
+	(*PostFileResponse)(nil), // 6: api.PostFileResponse
 }
 var file_proto_api_proto_depIdxs = []int32{
 	1, // 0: api.PassManagerService.Register:input_type -> api.LoginRequest
 	1, // 1: api.PassManagerService.Login:input_type -> api.LoginRequest
 	3, // 2: api.PassManagerService.PostCard:input_type -> api.PostCardRequest
-	2, // 3: api.PassManagerService.Register:output_type -> api.LoginResponse
-	2, // 4: api.PassManagerService.Login:output_type -> api.LoginResponse
-	4, // 5: api.PassManagerService.PostCard:output_type -> api.PostCardResponse
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
+	5, // 3: api.PassManagerService.PostFile:input_type -> api.PostFileRequest
+	2, // 4: api.PassManagerService.Register:output_type -> api.LoginResponse
+	2, // 5: api.PassManagerService.Login:output_type -> api.LoginResponse
+	4, // 6: api.PassManagerService.PostCard:output_type -> api.PostCardResponse
+	6, // 7: api.PassManagerService.PostFile:output_type -> api.PostFileResponse
+	4, // [4:8] is the sub-list for method output_type
+	0, // [0:4] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -325,7 +440,7 @@ func file_proto_api_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_api_proto_rawDesc), len(file_proto_api_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

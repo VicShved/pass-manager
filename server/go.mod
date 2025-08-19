@@ -20,6 +20,7 @@ require (
 
 require (
 	github.com/golang-jwt/jwt/v4 v4.5.2
+	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/hashicorp/go-uuid v1.0.3
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/multierr v1.10.0 // indirect

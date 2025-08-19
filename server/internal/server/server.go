@@ -11,7 +11,6 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/keepalive"
 )
 
 // GServer
@@ -36,15 +35,16 @@ func getTLSCreds(domain string) grpc.ServerOption {
 }
 
 func GetServer(serv *service.PassManageService, conf *config.ServerConfigStruct) (*GServer, error) {
-	keepAlive := grpc.KeepaliveParams(keepalive.ServerParameters{MaxConnectionAgeGrace: 84000})
+	// keepAlive := grpc.KeepaliveParams(keepalive.ServerParameters{MaxConnectionAgeGrace: 84000})
 	// creds := getTLSCreds(conf.BaseURL)
 	server := grpc.NewServer(
 		// creds,
 		grpc.ChainUnaryInterceptor(AuthUnaryInterceptor),
-		keepAlive,
-		grpc.MaxRecvMsgSize(1024*1024*1024),
-		grpc.MaxSendMsgSize(1024*1024*1024),
-		grpc.ConnectionTimeout(60000),
+		// grpc.ChainStreamInterceptor(AuthStreamInterceptor),
+		// keepAlive,
+		// grpc.MaxRecvMsgSize(1024*1024*1024),
+		// grpc.MaxSendMsgSize(1024*1024*1024),
+		// grpc.ConnectionTimeout(60000),
 	)
 	gServer := GServer{serv: serv, server: server}
 	pb.RegisterPassManagerServiceServer(server, gServer)

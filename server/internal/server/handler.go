@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"io"
+	"os"
 
 	pb "github.com/VicShved/pass-manager/server/pkg/api/proto"
 	"github.com/VicShved/pass-manager/server/pkg/logger"
@@ -68,7 +70,53 @@ func (s GServer) PostCard(ctx context.Context, in *pb.PostCardRequest) (*pb.Post
 	var response pb.PostCardResponse
 	userID := getUserID(ctx)
 	if userID == "" {
-		return nil, status.Errorf(codes.PermissionDenied, "Отсутствует токен/Не определен пользователь")
+		return &response, status.Errorf(codes.PermissionDenied, "Отсутствует токен/Не определен пользователь")
 	}
 	return &response, nil
+}
+
+func (s GServer) PostFile(stream grpc.ClientStreamingServer[pb.PostFileRequest, pb.PostFileResponse]) error {
+	logger.Log.Info("Start PostFile")
+	var fileName string
+	var filelSize uint64
+	var newFileName string
+	ctx := stream.Context()
+	userID := getUserID(ctx)
+	if userID == "" {
+		return status.Errorf(codes.PermissionDenied, "Отсутствует токен/Не определен пользователь")
+	}
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		if fileName == "" {
+			fileName = req.FileName
+			file, err := os.Create(newFileName)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+		}
+		file, err := os.OpenFile(newFileName, os.O_APPEND|os.O_WRONLY, 0644)
+		if err != nil {
+			return err
+		}
+		_, err = file.Write(req.GetChunk())
+		if err != nil {
+			file.Close()
+			return err
+		}
+		file.Close()
+		filelSize += uint64(len(req.GetChunk()))
+	}
+	logger.Log.Info("Finish PostFile")
+	return stream.SendAndClose(&pb.PostFileResponse{
+		FileName: fileName,
+		FileSize: filelSize,
+	})
+
 }

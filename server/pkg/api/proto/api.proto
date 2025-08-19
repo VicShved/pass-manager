@@ -27,9 +27,20 @@ message PostCardResponse {
     string id = 1;
 }
 
+message PostFileRequest {
+    bytes chunk = 1;
+    string file_name = 2;
+}
+
+message PostFileResponse {
+    string file_name = 1;
+    uint64 file_size = 2;
+}
+
 service PassManagerService {
     rpc Register(LoginRequest) returns (LoginResponse);
     rpc Login(LoginRequest) returns (LoginResponse);
     rpc PostCard(PostCardRequest) returns (PostCardResponse);
+    rpc PostFile(stream PostFileRequest) returns (PostFileResponse);
 }
 
