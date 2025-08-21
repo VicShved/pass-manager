@@ -23,9 +23,12 @@ func RunServer() {
 	// Init cu`stom logger
 	logger.InitLogger(conf.LogLevel)
 
+	// filestorage repo
+	var fileRepo repository.FileStoragerRepoInterface
+	fileRepo, err := repository.GetFileStorageRepo("")
 	// repo choice
 	var repo repository.RepoInterface
-	repo, err := repository.GetGormRepo(conf)
+	repo, err = repository.GetGormRepo(conf, fileRepo)
 	if err != nil {
 		panic(err)
 	}

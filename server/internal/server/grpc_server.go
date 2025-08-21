@@ -36,11 +36,11 @@ func getTLSCreds(domain string) grpc.ServerOption {
 
 func GetServer(serv *service.PassManageService, conf *config.ServerConfigStruct) (*GServer, error) {
 	// keepAlive := grpc.KeepaliveParams(keepalive.ServerParameters{MaxConnectionAgeGrace: 84000})
-	// creds := getTLSCreds(conf.BaseURL)
+	// creds := getTLSCreds(conf.ServerAddress)
 	server := grpc.NewServer(
 		// creds,
 		grpc.ChainUnaryInterceptor(AuthUnaryInterceptor),
-		// grpc.ChainStreamInterceptor(AuthStreamInterceptor),
+		grpc.ChainStreamInterceptor(AuthStreamInterceptor),
 		// keepAlive,
 		// grpc.MaxRecvMsgSize(1024*1024*1024),
 		// grpc.MaxSendMsgSize(1024*1024*1024),

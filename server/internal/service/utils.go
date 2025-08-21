@@ -1,6 +1,8 @@
 package service
 
 import (
+	"encoding/base64"
+
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/hashicorp/go-uuid"
 )
@@ -46,4 +48,11 @@ func GetNewUserIDToken(secretKey string) (string, string) {
 	userID, _ := GetNewUUID()
 	token, _ := GetJWTTokenString(&userID, secretKey)
 	return userID, token
+}
+
+const lengthSecretKey int = 32
+
+func generateSecretKey() string {
+	key := make([]byte, lengthSecretKey)
+	return base64.URLEncoding.EncodeToString(key)
 }

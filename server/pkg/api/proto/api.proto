@@ -21,6 +21,7 @@ message PostCardRequest {
     string  card_number = 1;
     string  valid = 2;
     string  code = 3;
+    string description = 4;
 }
 
 message PostCardResponse {
@@ -30,6 +31,7 @@ message PostCardResponse {
 message PostFileRequest {
     bytes chunk = 1;
     string file_name = 2;
+    string description = 3;
 }
 
 message PostFileResponse {

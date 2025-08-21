@@ -16,6 +16,7 @@ type ServerConfigStruct struct {
 	LogLevel        string
 	EnableTLS       bool `json:"enable_tls"`
 	ConfigFileName  string
+	SchemaName      string
 	// TrustedSubnet   string `json:"trusted_subnet"`
 }
 

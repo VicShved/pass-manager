@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"io"
 	"time"
 
 	"github.com/VicShved/pass-manager/server/pkg/config"
@@ -11,29 +12,42 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 // GormRepository struct
 type GormRepository struct {
-	DB   *gorm.DB
-	conf *config.ServerConfigStruct
+	DB       *gorm.DB
+	conf     *config.ServerConfigStruct
+	fileRepo FileStoragerRepoInterface
 }
 
 // GetGormDB(dns string)
-func GetGormDB(dns string) (*gorm.DB, error) {
-	db, err := gorm.Open(postgres.Open(dns), &gorm.Config{TranslateError: true})
+func GetGormDB(dns string, schemaName string) (*gorm.DB, error) {
+	config := gorm.Config{TranslateError: true}
+	// add schema name
+	if schemaName != "" {
+		config.NamingStrategy = schema.NamingStrategy{
+			TablePrefix: schemaName + ".",
+		}
+	}
+	db, err := gorm.Open(
+		postgres.Open(dns),
+		&config,
+	)
 	return db, err
 }
 
 // GetGormRepo(dns string)
-func GetGormRepo(conf *config.ServerConfigStruct) (*GormRepository, error) {
-	db, err := GetGormDB(conf.DBDSN)
+func GetGormRepo(conf *config.ServerConfigStruct, fileStorageRepo FileStoragerRepoInterface) (*GormRepository, error) {
+	db, err := GetGormDB(conf.DBDSN, conf.SchemaName)
 	if err != nil {
 		return nil, err
 	}
 	repo := &GormRepository{
-		DB:   db,
-		conf: conf,
+		DB:       db,
+		conf:     conf,
+		fileRepo: fileStorageRepo,
 	}
 	err = repo.Migrate()
 	if err != nil {
@@ -86,4 +100,19 @@ func (r GormRepository) Login(login string, hashPassword string) (string, error)
 	}
 	logger.Log.Debug("", zap.Any("User", user))
 	return user.UserID, result.Error
+}
+
+func (r GormRepository) SaveData(ctx context.Context, userID string, desc string, dataType DataType, fileName string, secretKey string, reader io.Reader) (int, error) {
+	user := User{}
+	result := r.DB.WithContext(ctx).Where(&User{UserID: userID}).First(&user)
+	if result.Error != nil {
+		return 0, ErrLoginPassword
+	}
+	fileStorage, err := r.fileRepo.GetFileStorage(fileName)
+	if err != nil {
+		return 0, err
+	}
+	userData := UserData{}
+	result = r.DB.WithContext(ctx).Create(&userData)
+
 }

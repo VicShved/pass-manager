@@ -20,13 +20,15 @@ var users = map[string]userStruct{
 }
 
 type TestRepository struct {
-	conf *config.ServerConfigStruct
+	conf     *config.ServerConfigStruct
+	fileRepo FileStoragerRepoInterface
 }
 
 // GetGormRepo(dns string)
-func GetTestRepo(conf *config.ServerConfigStruct) (*TestRepository, error) {
+func GetTestRepo(conf *config.ServerConfigStruct, fileRepo FileStoragerRepoInterface) (*TestRepository, error) {
 	repo := &TestRepository{
-		conf: conf,
+		conf:     conf,
+		fileRepo: fileRepo,
 	}
 	return repo, nil
 }

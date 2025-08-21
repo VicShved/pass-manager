@@ -7,7 +7,8 @@ import (
 	"github.com/VicShved/pass-manager/server/pkg/config"
 	"github.com/VicShved/pass-manager/server/pkg/logger"
 	"github.com/golang-jwt/jwt/v4"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+
+	// grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -21,16 +22,17 @@ func getUserFromContext(ctx context.Context) (userID string) {
 		logger.Log.Warn("authUnaryInterceptor hasnt metadata")
 	}
 	tokens := md.Get(authorizationTokenName)
-	logger.Log.Debug("AuthUnaryInterceptor", zap.Any("Tokens=", tokens))
+	logger.Log.Debug("getUserFromContext", zap.Any("Tokens=", tokens))
 	if (len(tokens) > 0) && (len(tokens[0]) > 0) {
 		token, userID, err = service.ParseTokenUserID(tokens[0], config.ServerConfig.SecretKey)
 		if err != nil {
 			userID = ""
-		}
-		// Если токен не валидный
-		if !token.Valid {
-			logger.Log.Warn("Not valid token")
-			userID = ""
+		} else {
+			// Если токен не валидный
+			if !token.Valid {
+				logger.Log.Warn("Not valid token")
+				userID = ""
+			}
 		}
 	}
 	// Если токен не содержит ид пользователя, то не сильно ругаюсь
@@ -40,13 +42,24 @@ func getUserFromContext(ctx context.Context) (userID string) {
 	return userID
 }
 
+type newStreamStruct struct {
+	grpc.ServerStream
+	ctx context.Context
+}
+
+func (s newStreamStruct) Context() context.Context {
+	return s.ctx
+}
+
 func AuthStreamInterceptor(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	logger.Log.Debug("In authStreamInterceptor")
 	ctx := stream.Context()
 	userID := getUserFromContext(ctx)
-	newStream := grpc_middleware.WrapServerStream(stream)
 	md, _ := metadata.FromIncomingContext(ctx)
 	md.Set("userID", userID)
-	newStream.WrappedContext = metadata.NewIncomingContext(ctx, md)
+	newCtx := metadata.NewIncomingContext(ctx, md)
+	newStream := grpc.ServerStream(newStreamStruct{ServerStream: stream, ctx: newCtx})
+	logger.Log.Debug("Out authStreamInterceptor")
 	return handler(srv, newStream)
 }
 
