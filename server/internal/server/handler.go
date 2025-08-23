@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 
+	"github.com/VicShved/pass-manager/server/internal/repository"
 	"github.com/VicShved/pass-manager/server/internal/service"
 	pb "github.com/VicShved/pass-manager/server/pkg/api/proto"
 	"github.com/VicShved/pass-manager/server/pkg/logger"
@@ -76,7 +77,7 @@ func (s GServer) PostCard(ctx context.Context, in *pb.PostCardRequest) (*pb.Post
 	if err != nil {
 		return &response, err
 	}
-	response.Id = rowID
+	response.RowId = rowID
 	response.Length = length
 
 	return &response, nil
@@ -93,7 +94,7 @@ func (s GServer) PostLogPass(ctx context.Context, in *pb.PostLogPassRequest) (*p
 	if err != nil {
 		return &response, err
 	}
-	response.Id = rowID
+	response.RowId = rowID
 	response.Length = length
 
 	return &response, nil
@@ -134,23 +135,38 @@ func (s GServer) GetLogPass(ctx context.Context, in *pb.GetDataRequest) (*pb.Get
 
 }
 
-func (s GServer) PostFile(stream grpc.ClientStreamingServer[pb.PostFileRequest, pb.PostFileResponse]) error {
+func (s GServer) PostFile(stream grpc.ClientStreamingServer[pb.PostFileRequest, pb.PostDataResponse]) error {
 	logger.Log.Info("Start PostFile")
-	var fileName string
+	var rowID uint32
 	var fileSize uint64
 	ctx := stream.Context()
 	userID := getUserID(ctx)
 	if userID == "" {
 		return status.Errorf(codes.PermissionDenied, "Отсутствует токен/Не определен пользователь")
 	}
-	fileName, fileSize, err := s.serv.PostFile(stream, userID)
+	rowID, fileSize, err := s.serv.PostFile(ctx, stream, userID, repository.DataTypeFile)
 	if err != nil {
 		return err
 	}
 	logger.Log.Info("Finish PostFile")
-	return stream.SendAndClose(&pb.PostFileResponse{
-		FileName: fileName,
-		FileSize: fileSize,
+	return stream.SendAndClose(&pb.PostDataResponse{
+		RowId:  rowID,
+		Length: fileSize,
 	})
+}
 
+func (s GServer) GetFile(in *pb.GetDataRequest, stream grpc.ServerStreamingServer[pb.GetFileResponse]) error {
+	logger.Log.Info("Start PostFile")
+	var rowID uint32
+	ctx := stream.Context()
+	userID := getUserID(ctx)
+	if userID == "" {
+		return status.Errorf(codes.PermissionDenied, "Отсутствует токен/Не определен пользователь")
+	}
+	fileSize, err := s.serv.GetFile(ctx, userID, rowID, stream)
+	if err != nil {
+		return err
+	}
+	logger.Log.Info("Finish GetFile", zap.Uint64("FileSize", fileSize))
+	return nil
 }

@@ -116,11 +116,6 @@ func (r GormRepository) SaveData(ctx context.Context, userID string, desc string
 	if err != nil {
 		return rowID, err
 	}
-	// result := r.DB.WithContext(ctx).Where(&User{UserID: userID}).First(&user)
-	// if result.Error != nil {
-	// 	logger.Log.Error("SaveData", zap.Error(result.Error))
-	// 	return rowID, ErrUserIdFromToken
-	// }
 	userData := UserData{
 		UserID:      user.ID,
 		Description: desc,

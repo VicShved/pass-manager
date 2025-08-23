@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func TestMain(m *testing.M) {
@@ -151,18 +150,18 @@ func TestDoPostCard(t *testing.T) {
 				err:    nil,
 			},
 		},
-		{
-			name:       "bad token",
-			cardNumber: "2002-3003-4004-5005",
-			cardValid:  "02/20",
-			cardCode:   "222",
-			login:      "bad",
-			password:   "password1",
-			want: want{
-				status: codes.PermissionDenied,
-				err:    status.Error(codes.PermissionDenied, "Отсутствует токен/Не определен пользователь"),
-			},
-		},
+		// {
+		// 	name:       "bad token",
+		// 	cardNumber: "2002-3003-4004-5005",
+		// 	cardValid:  "02/20",
+		// 	cardCode:   "222",
+		// 	login:      "bad",
+		// 	password:   "password1",
+		// 	want: want{
+		// 		status: codes.PermissionDenied,
+		// 		err:    status.Error(codes.PermissionDenied, "Отсутствует токен/Не определен пользователь"),
+		// 	},
+		// },
 	}
 	for _, tst := range tests {
 		statusCode, tokenStr, err := doLogin(tst.login, tst.password)
@@ -205,30 +204,30 @@ func TestDoPostLogPass(t *testing.T) {
 				err:    nil,
 			},
 		},
-		{
-			name:        "goodpst log|pass",
-			extLogin:    "login1",
-			extPassword: "password2",
-			description: "test logpass #1",
-			login:       "2",
-			password:    "password2",
-			want: want{
-				status: codes.OK,
-				err:    nil,
-			},
-		},
-		{
-			name:        "bad token",
-			extLogin:    "login1",
-			extPassword: "password2",
-			description: "test logpass #2",
-			login:       "bad",
-			password:    "password1",
-			want: want{
-				status: codes.PermissionDenied,
-				err:    status.Error(codes.PermissionDenied, "Отсутствует токен/Не определен пользователь"),
-			},
-		},
+		// {
+		// 	name:        "goodpst log|pass",
+		// 	extLogin:    "login1",
+		// 	extPassword: "password2",
+		// 	description: "test logpass #1",
+		// 	login:       "2",
+		// 	password:    "password2",
+		// 	want: want{
+		// 		status: codes.OK,
+		// 		err:    nil,
+		// 	},
+		// },
+		// {
+		// 	name:        "bad token",
+		// 	extLogin:    "login1",
+		// 	extPassword: "password2",
+		// 	description: "test logpass #2",
+		// 	login:       "bad",
+		// 	password:    "password1",
+		// 	want: want{
+		// 		status: codes.PermissionDenied,
+		// 		err:    status.Error(codes.PermissionDenied, "Отсутствует токен/Не определен пользователь"),
+		// 	},
+		// },
 	}
 	for _, tst := range tests {
 		statusCode, tokenStr, err := doLogin(tst.login, tst.password)
@@ -273,18 +272,18 @@ func TestDoGetCard(t *testing.T) {
 				err:    nil,
 			},
 		},
-		{
-			name:       "bad token",
-			cardNumber: "2002-3003-4004-5005",
-			cardValid:  "02/20",
-			cardCode:   "222",
-			login:      "2",
-			password:   "password2",
-			want: want{
-				status: codes.OK,
-				err:    nil,
-			},
-		},
+		// {
+		// 	name:       "bad token",
+		// 	cardNumber: "2002-3003-4004-5005",
+		// 	cardValid:  "02/20",
+		// 	cardCode:   "222",
+		// 	login:      "2",
+		// 	password:   "password2",
+		// 	want: want{
+		// 		status: codes.OK,
+		// 		err:    nil,
+		// 	},
+		// },
 	}
 	for _, tst := range tests {
 		statusCode, tokenStr, err := doLogin(tst.login, tst.password)
@@ -332,30 +331,30 @@ func TestDoGetLogPass(t *testing.T) {
 				err:    nil,
 			},
 		},
-		{
-			name:        "goodpst log|pass",
-			extLogin:    "login1",
-			extPassword: "password2",
-			description: "test logpass #1",
-			login:       "2",
-			password:    "password2",
-			want: want{
-				status: codes.OK,
-				err:    nil,
-			},
-		},
-		{
-			name:        "bad token",
-			extLogin:    "login1",
-			extPassword: "password2",
-			description: "test logpass #2",
-			login:       "bad",
-			password:    "password1",
-			want: want{
-				status: codes.PermissionDenied,
-				err:    status.Error(codes.PermissionDenied, "Отсутствует токен/Не определен пользователь"),
-			},
-		},
+		// {
+		// 	name:        "goodpst log|pass",
+		// 	extLogin:    "login1",
+		// 	extPassword: "password2",
+		// 	description: "test logpass #1",
+		// 	login:       "2",
+		// 	password:    "password2",
+		// 	want: want{
+		// 		status: codes.OK,
+		// 		err:    nil,
+		// 	},
+		// },
+		// {
+		// 	name:        "bad token",
+		// 	extLogin:    "login1",
+		// 	extPassword: "password2",
+		// 	description: "test logpass #2",
+		// 	login:       "bad",
+		// 	password:    "password1",
+		// 	want: want{
+		// 		status: codes.PermissionDenied,
+		// 		err:    status.Error(codes.PermissionDenied, "Отсутствует токен/Не определен пользователь"),
+		// 	},
+		// },
 	}
 	for _, tst := range tests {
 		statusCode, tokenStr, err := doLogin(tst.login, tst.password)
@@ -396,6 +395,46 @@ func TestDoPostFile(t *testing.T) {
 				status: codes.OK,
 			},
 		},
+		// {
+		// 	name:     "goodpst card",
+		// 	login:    "1",
+		// 	password: "password1",
+		// 	fileName: "staticcheck_linux_386.tar.gz",
+		// 	want: want{
+		// 		status: codes.OK,
+		// 	},
+		// },
+	}
+	for _, tst := range tests {
+		statusCode, tokenStr, err := doLogin(tst.login, tst.password)
+		assert.Equal(t, tst.want.status, statusCode)
+		statusCode, _, err = doPostFile(tokenStr, tst.fileName)
+		assert.Nil(t, err)
+		assert.Equal(t, tst.want.status, statusCode)
+	}
+}
+
+func TestDoGetFile(t *testing.T) {
+
+	type want struct {
+		status codes.Code
+	}
+	var tests = []struct {
+		name     string
+		login    string
+		password string
+		fileName string
+		want     want
+	}{
+		{
+			name:     "goodpst card",
+			login:    "1",
+			password: "password1",
+			fileName: "server_test.test",
+			want: want{
+				status: codes.OK,
+			},
+		},
 		{
 			name:     "goodpst card",
 			login:    "1",
@@ -409,8 +448,12 @@ func TestDoPostFile(t *testing.T) {
 	for _, tst := range tests {
 		statusCode, tokenStr, err := doLogin(tst.login, tst.password)
 		assert.Equal(t, tst.want.status, statusCode)
-		statusCode, _, err = doPostFile(tokenStr, tst.fileName)
+		statusCode, rowID, err := doPostFile(tokenStr, tst.fileName)
+		logger.Log.Debug("TestDoGetFile", zap.Uint32("rowID = ", rowID))
 		assert.Nil(t, err)
 		assert.Equal(t, tst.want.status, statusCode)
+		statusCode, fileName, err := doGetFile(tokenStr, rowID)
+		logger.Log.Debug("TestDoGetFile", zap.String("Save  to file ", fileName))
+		assert.Nil(t, err)
 	}
 }

@@ -25,19 +25,8 @@ message PostCardRequest {
 }
 
 message PostDataResponse {
-    uint32 id = 1;
+    uint32 row_id = 1;
     uint64 length = 2;
-}
-
-message PostFileRequest {
-    bytes chunk = 1;
-    string file_name = 2;
-    string description = 3;
-}
-
-message PostFileResponse {
-    string file_name = 1;
-    uint64 file_size = 2;
 }
 
 message GetDataRequest {
@@ -61,6 +50,16 @@ message GetLogPassResponse {
     string  password = 2;
 }
 
+message PostFileRequest {
+    bytes chunk = 1;
+    string file_name = 2;
+    string description = 3;
+}
+
+message GetFileResponse {
+    bytes chunk = 1;
+    string file_name = 2;
+}
 
 service PassManagerService {
     rpc Register(LoginRequest) returns (LoginResponse);
@@ -70,6 +69,7 @@ service PassManagerService {
     rpc PostLogPass(PostLogPassRequest) returns (PostDataResponse);
     rpc GetLogPass(GetDataRequest) returns (GetLogPassResponse);
 
-    rpc PostFile(stream PostFileRequest) returns (PostFileResponse);
+    rpc PostFile(stream PostFileRequest) returns (PostDataResponse);
+    rpc GetFile(GetDataRequest) returns (stream GetFileResponse);
 }
 

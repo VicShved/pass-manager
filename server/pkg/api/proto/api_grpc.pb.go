@@ -26,6 +26,7 @@ const (
 	PassManagerService_PostLogPass_FullMethodName = "/api.PassManagerService/PostLogPass"
 	PassManagerService_GetLogPass_FullMethodName  = "/api.PassManagerService/GetLogPass"
 	PassManagerService_PostFile_FullMethodName    = "/api.PassManagerService/PostFile"
+	PassManagerService_GetFile_FullMethodName     = "/api.PassManagerService/GetFile"
 )
 
 // PassManagerServiceClient is the client API for PassManagerService service.
@@ -38,7 +39,8 @@ type PassManagerServiceClient interface {
 	GetCard(ctx context.Context, in *GetDataRequest, opts ...grpc.CallOption) (*GetCardResponse, error)
 	PostLogPass(ctx context.Context, in *PostLogPassRequest, opts ...grpc.CallOption) (*PostDataResponse, error)
 	GetLogPass(ctx context.Context, in *GetDataRequest, opts ...grpc.CallOption) (*GetLogPassResponse, error)
-	PostFile(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[PostFileRequest, PostFileResponse], error)
+	PostFile(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[PostFileRequest, PostDataResponse], error)
+	GetFile(ctx context.Context, in *GetDataRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[GetFileResponse], error)
 }
 
 type passManagerServiceClient struct {
@@ -109,18 +111,37 @@ func (c *passManagerServiceClient) GetLogPass(ctx context.Context, in *GetDataRe
 	return out, nil
 }
 
-func (c *passManagerServiceClient) PostFile(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[PostFileRequest, PostFileResponse], error) {
+func (c *passManagerServiceClient) PostFile(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[PostFileRequest, PostDataResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &PassManagerService_ServiceDesc.Streams[0], PassManagerService_PostFile_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[PostFileRequest, PostFileResponse]{ClientStream: stream}
+	x := &grpc.GenericClientStream[PostFileRequest, PostDataResponse]{ClientStream: stream}
 	return x, nil
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type PassManagerService_PostFileClient = grpc.ClientStreamingClient[PostFileRequest, PostFileResponse]
+type PassManagerService_PostFileClient = grpc.ClientStreamingClient[PostFileRequest, PostDataResponse]
+
+func (c *passManagerServiceClient) GetFile(ctx context.Context, in *GetDataRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[GetFileResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &PassManagerService_ServiceDesc.Streams[1], PassManagerService_GetFile_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[GetDataRequest, GetFileResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type PassManagerService_GetFileClient = grpc.ServerStreamingClient[GetFileResponse]
 
 // PassManagerServiceServer is the server API for PassManagerService service.
 // All implementations must embed UnimplementedPassManagerServiceServer
@@ -132,7 +153,8 @@ type PassManagerServiceServer interface {
 	GetCard(context.Context, *GetDataRequest) (*GetCardResponse, error)
 	PostLogPass(context.Context, *PostLogPassRequest) (*PostDataResponse, error)
 	GetLogPass(context.Context, *GetDataRequest) (*GetLogPassResponse, error)
-	PostFile(grpc.ClientStreamingServer[PostFileRequest, PostFileResponse]) error
+	PostFile(grpc.ClientStreamingServer[PostFileRequest, PostDataResponse]) error
+	GetFile(*GetDataRequest, grpc.ServerStreamingServer[GetFileResponse]) error
 	mustEmbedUnimplementedPassManagerServiceServer()
 }
 
@@ -161,8 +183,11 @@ func (UnimplementedPassManagerServiceServer) PostLogPass(context.Context, *PostL
 func (UnimplementedPassManagerServiceServer) GetLogPass(context.Context, *GetDataRequest) (*GetLogPassResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLogPass not implemented")
 }
-func (UnimplementedPassManagerServiceServer) PostFile(grpc.ClientStreamingServer[PostFileRequest, PostFileResponse]) error {
+func (UnimplementedPassManagerServiceServer) PostFile(grpc.ClientStreamingServer[PostFileRequest, PostDataResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method PostFile not implemented")
+}
+func (UnimplementedPassManagerServiceServer) GetFile(*GetDataRequest, grpc.ServerStreamingServer[GetFileResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method GetFile not implemented")
 }
 func (UnimplementedPassManagerServiceServer) mustEmbedUnimplementedPassManagerServiceServer() {}
 func (UnimplementedPassManagerServiceServer) testEmbeddedByValue()                            {}
@@ -294,11 +319,22 @@ func _PassManagerService_GetLogPass_Handler(srv interface{}, ctx context.Context
 }
 
 func _PassManagerService_PostFile_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(PassManagerServiceServer).PostFile(&grpc.GenericServerStream[PostFileRequest, PostFileResponse]{ServerStream: stream})
+	return srv.(PassManagerServiceServer).PostFile(&grpc.GenericServerStream[PostFileRequest, PostDataResponse]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type PassManagerService_PostFileServer = grpc.ClientStreamingServer[PostFileRequest, PostFileResponse]
+type PassManagerService_PostFileServer = grpc.ClientStreamingServer[PostFileRequest, PostDataResponse]
+
+func _PassManagerService_GetFile_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetDataRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(PassManagerServiceServer).GetFile(m, &grpc.GenericServerStream[GetDataRequest, GetFileResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type PassManagerService_GetFileServer = grpc.ServerStreamingServer[GetFileResponse]
 
 // PassManagerService_ServiceDesc is the grpc.ServiceDesc for PassManagerService service.
 // It's only intended for direct use with grpc.RegisterService,
@@ -337,6 +373,11 @@ var PassManagerService_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "PostFile",
 			Handler:       _PassManagerService_PostFile_Handler,
 			ClientStreams: true,
+		},
+		{
+			StreamName:    "GetFile",
+			Handler:       _PassManagerService_GetFile_Handler,
+			ServerStreams: true,
 		},
 	},
 	Metadata: "proto/api.proto",

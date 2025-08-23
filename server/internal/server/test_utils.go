@@ -8,6 +8,9 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/VicShved/pass-manager/server/internal/repository"
 	"github.com/VicShved/pass-manager/server/internal/service"
@@ -155,7 +158,7 @@ func doPostCard(tokenStr string, cardNumber string, cardValid string, cardCode s
 		}
 		return grpcStatus, 0, err
 	}
-	return grpcStatus, response.Id, nil
+	return grpcStatus, response.RowId, nil
 }
 
 func doPostLogPass(tokenStr string, login string, password string, description string) (codes.Code, uint32, error) {
@@ -182,7 +185,7 @@ func doPostLogPass(tokenStr string, login string, password string, description s
 		}
 		return grpcStatus, 0, err
 	}
-	return grpcStatus, response.Id, nil
+	return grpcStatus, response.RowId, nil
 }
 
 func doGetCard(tokenStr string, rowID uint32) (grpcCode codes.Code, card service.CardStruct, err error) {
@@ -245,20 +248,20 @@ func doGetLogPass(tokenStr string, rowID uint32) (grpcCode codes.Code, logPass s
 	return grpcStatus, logPass, nil
 }
 
-func doPostFile(tokenStr string, fileName string) (codes.Code, string, error) {
+func doPostFile(tokenStr string, fileName string) (grpcCode codes.Code, rowID uint32, err error) {
 	// create connection
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials((insecure.NewCredentials())))
 	if err != nil {
-		log.Fatal(err)
-		return 999, "", err
+		logger.Log.Error("doPostFile", zap.Error(err))
+		return grpcCode, rowID, err
 	}
 	defer conn.Close()
 	// open file
 	file, err := os.Open(fileName)
 	if err != nil {
 		logger.Log.Error("doPostFile", zap.Error(err))
-		return codes.OK, "", err
+		return grpcCode, rowID, err
 	}
 	defer file.Close()
 	// create client & stream
@@ -267,7 +270,7 @@ func doPostFile(tokenStr string, fileName string) (codes.Code, string, error) {
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	stream, err := client.PostFile(ctx)
 	if err != nil {
-		return status.Code(err), "", err
+		return status.Code(err), rowID, err
 	}
 
 	buffer := make([]byte, 32)
@@ -278,23 +281,81 @@ func doPostFile(tokenStr string, fileName string) (codes.Code, string, error) {
 		}
 		if err != nil {
 			logger.Log.Error("doPostFile", zap.Error(err))
-			return codes.OK, "", err
+			return grpcCode, rowID, err
 		}
 		err = stream.Send(
 			&pb.PostFileRequest{
-				FileName: fileName,
-				Chunk:    buffer[:n],
+				FileName:    fileName,
+				Description: "Description " + fileName,
+				Chunk:       buffer[:n],
 			},
 		)
 		if err != nil {
 			logger.Log.Error("doPostFile", zap.Error(err))
-			return codes.OK, "", err
+			return grpcCode, rowID, err
 		}
 	}
 	result, err := stream.CloseAndRecv()
 	if err != nil {
 		logger.Log.Error("doPostFile", zap.Error(err))
 	}
-	logger.Log.Info("Finish doPostFile with results", zap.String("filename: ", result.FileName), zap.Int("filesize: ", int(result.FileSize)))
-	return 0, "", err
+	logger.Log.Info("Finish doPostFile with results", zap.Uint32("rowID: ", result.RowId), zap.Int("filesize: ", int(result.Length)))
+	return grpcCode, result.RowId, err
+}
+
+func doGetFile(tokenStr string, rowID uint32) (grpcCode codes.Code, fileName string, err error) {
+	var file *os.File
+	var fileSize int
+	// create connection
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials((insecure.NewCredentials())))
+	if err != nil {
+		logger.Log.Error("doGetFile", zap.Error(err))
+		return grpcCode, fileName, err
+	}
+	defer conn.Close()
+	// create client & stream
+	client := pb.NewPassManagerServiceClient(conn)
+	md := metadata.Pairs(authorizationTokenName, tokenStr)
+	ctx = metadata.NewOutgoingContext(ctx, md)
+	inData := pb.GetDataRequest{RowId: rowID}
+	stream, err := client.GetFile(ctx, &inData)
+	if err != nil {
+		logger.Log.Error("doGetFile", zap.Error(err))
+		return status.Code(err), fileName, err
+	}
+	for {
+		resp, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			logger.Log.Error("doGetFile", zap.Error(err))
+			return grpcCode, fileName, err
+		}
+		if fileName == "" {
+			fileName = resp.FileName
+			names := strings.Split(fileName, ".")
+			fileName = names[0] + strconv.FormatInt(time.Now().Unix(), 10) + "." + names[1]
+			file, err = os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0662)
+			if err != nil {
+				logger.Log.Error("doGetFile", zap.Error(err))
+				return grpcCode, fileName, err
+			}
+			defer file.Close()
+
+		}
+		n, err := file.Write(resp.GetChunk())
+		fileSize += n
+		if err != nil {
+			logger.Log.Error("doGetFile", zap.Error(err))
+			return grpcCode, fileName, err
+		}
+
+	}
+	if err != nil {
+		logger.Log.Error("doGetFile", zap.Error(err))
+	}
+	logger.Log.Info("Finish doGetFile with results", zap.String("fileName: ", fileName), zap.Int("filesize: ", fileSize))
+	return grpcCode, fileName, err
 }

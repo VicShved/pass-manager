@@ -223,7 +223,7 @@ func (x *PostCardRequest) GetDescription() string {
 
 type PostDataResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            uint32                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	RowId         uint32                 `protobuf:"varint,1,opt,name=row_id,json=rowId,proto3" json:"row_id,omitempty"`
 	Length        uint64                 `protobuf:"varint,2,opt,name=length,proto3" json:"length,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -259,9 +259,9 @@ func (*PostDataResponse) Descriptor() ([]byte, []int) {
 	return file_proto_api_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *PostDataResponse) GetId() uint32 {
+func (x *PostDataResponse) GetRowId() uint32 {
 	if x != nil {
-		return x.Id
+		return x.RowId
 	}
 	return 0
 }
@@ -269,118 +269,6 @@ func (x *PostDataResponse) GetId() uint32 {
 func (x *PostDataResponse) GetLength() uint64 {
 	if x != nil {
 		return x.Length
-	}
-	return 0
-}
-
-type PostFileRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Chunk         []byte                 `protobuf:"bytes,1,opt,name=chunk,proto3" json:"chunk,omitempty"`
-	FileName      string                 `protobuf:"bytes,2,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
-	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PostFileRequest) Reset() {
-	*x = PostFileRequest{}
-	mi := &file_proto_api_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PostFileRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PostFileRequest) ProtoMessage() {}
-
-func (x *PostFileRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_api_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PostFileRequest.ProtoReflect.Descriptor instead.
-func (*PostFileRequest) Descriptor() ([]byte, []int) {
-	return file_proto_api_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *PostFileRequest) GetChunk() []byte {
-	if x != nil {
-		return x.Chunk
-	}
-	return nil
-}
-
-func (x *PostFileRequest) GetFileName() string {
-	if x != nil {
-		return x.FileName
-	}
-	return ""
-}
-
-func (x *PostFileRequest) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-type PostFileResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	FileName      string                 `protobuf:"bytes,1,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
-	FileSize      uint64                 `protobuf:"varint,2,opt,name=file_size,json=fileSize,proto3" json:"file_size,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PostFileResponse) Reset() {
-	*x = PostFileResponse{}
-	mi := &file_proto_api_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PostFileResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PostFileResponse) ProtoMessage() {}
-
-func (x *PostFileResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_api_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PostFileResponse.ProtoReflect.Descriptor instead.
-func (*PostFileResponse) Descriptor() ([]byte, []int) {
-	return file_proto_api_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *PostFileResponse) GetFileName() string {
-	if x != nil {
-		return x.FileName
-	}
-	return ""
-}
-
-func (x *PostFileResponse) GetFileSize() uint64 {
-	if x != nil {
-		return x.FileSize
 	}
 	return 0
 }
@@ -394,7 +282,7 @@ type GetDataRequest struct {
 
 func (x *GetDataRequest) Reset() {
 	*x = GetDataRequest{}
-	mi := &file_proto_api_proto_msgTypes[7]
+	mi := &file_proto_api_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -406,7 +294,7 @@ func (x *GetDataRequest) String() string {
 func (*GetDataRequest) ProtoMessage() {}
 
 func (x *GetDataRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_api_proto_msgTypes[7]
+	mi := &file_proto_api_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -419,7 +307,7 @@ func (x *GetDataRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDataRequest.ProtoReflect.Descriptor instead.
 func (*GetDataRequest) Descriptor() ([]byte, []int) {
-	return file_proto_api_proto_rawDescGZIP(), []int{7}
+	return file_proto_api_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetDataRequest) GetRowId() uint32 {
@@ -440,7 +328,7 @@ type GetCardResponse struct {
 
 func (x *GetCardResponse) Reset() {
 	*x = GetCardResponse{}
-	mi := &file_proto_api_proto_msgTypes[8]
+	mi := &file_proto_api_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -452,7 +340,7 @@ func (x *GetCardResponse) String() string {
 func (*GetCardResponse) ProtoMessage() {}
 
 func (x *GetCardResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_api_proto_msgTypes[8]
+	mi := &file_proto_api_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -465,7 +353,7 @@ func (x *GetCardResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCardResponse.ProtoReflect.Descriptor instead.
 func (*GetCardResponse) Descriptor() ([]byte, []int) {
-	return file_proto_api_proto_rawDescGZIP(), []int{8}
+	return file_proto_api_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetCardResponse) GetCardNumber() string {
@@ -500,7 +388,7 @@ type PostLogPassRequest struct {
 
 func (x *PostLogPassRequest) Reset() {
 	*x = PostLogPassRequest{}
-	mi := &file_proto_api_proto_msgTypes[9]
+	mi := &file_proto_api_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -512,7 +400,7 @@ func (x *PostLogPassRequest) String() string {
 func (*PostLogPassRequest) ProtoMessage() {}
 
 func (x *PostLogPassRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_api_proto_msgTypes[9]
+	mi := &file_proto_api_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -525,7 +413,7 @@ func (x *PostLogPassRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PostLogPassRequest.ProtoReflect.Descriptor instead.
 func (*PostLogPassRequest) Descriptor() ([]byte, []int) {
-	return file_proto_api_proto_rawDescGZIP(), []int{9}
+	return file_proto_api_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *PostLogPassRequest) GetLogin() string {
@@ -559,7 +447,7 @@ type GetLogPassResponse struct {
 
 func (x *GetLogPassResponse) Reset() {
 	*x = GetLogPassResponse{}
-	mi := &file_proto_api_proto_msgTypes[10]
+	mi := &file_proto_api_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -571,7 +459,7 @@ func (x *GetLogPassResponse) String() string {
 func (*GetLogPassResponse) ProtoMessage() {}
 
 func (x *GetLogPassResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_api_proto_msgTypes[10]
+	mi := &file_proto_api_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -584,7 +472,7 @@ func (x *GetLogPassResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetLogPassResponse.ProtoReflect.Descriptor instead.
 func (*GetLogPassResponse) Descriptor() ([]byte, []int) {
-	return file_proto_api_proto_rawDescGZIP(), []int{10}
+	return file_proto_api_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetLogPassResponse) GetLogin() string {
@@ -597,6 +485,118 @@ func (x *GetLogPassResponse) GetLogin() string {
 func (x *GetLogPassResponse) GetPassword() string {
 	if x != nil {
 		return x.Password
+	}
+	return ""
+}
+
+type PostFileRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Chunk         []byte                 `protobuf:"bytes,1,opt,name=chunk,proto3" json:"chunk,omitempty"`
+	FileName      string                 `protobuf:"bytes,2,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
+	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PostFileRequest) Reset() {
+	*x = PostFileRequest{}
+	mi := &file_proto_api_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PostFileRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PostFileRequest) ProtoMessage() {}
+
+func (x *PostFileRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_api_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PostFileRequest.ProtoReflect.Descriptor instead.
+func (*PostFileRequest) Descriptor() ([]byte, []int) {
+	return file_proto_api_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *PostFileRequest) GetChunk() []byte {
+	if x != nil {
+		return x.Chunk
+	}
+	return nil
+}
+
+func (x *PostFileRequest) GetFileName() string {
+	if x != nil {
+		return x.FileName
+	}
+	return ""
+}
+
+func (x *PostFileRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+type GetFileResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Chunk         []byte                 `protobuf:"bytes,1,opt,name=chunk,proto3" json:"chunk,omitempty"`
+	FileName      string                 `protobuf:"bytes,2,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetFileResponse) Reset() {
+	*x = GetFileResponse{}
+	mi := &file_proto_api_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetFileResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetFileResponse) ProtoMessage() {}
+
+func (x *GetFileResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_api_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetFileResponse.ProtoReflect.Descriptor instead.
+func (*GetFileResponse) Descriptor() ([]byte, []int) {
+	return file_proto_api_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *GetFileResponse) GetChunk() []byte {
+	if x != nil {
+		return x.Chunk
+	}
+	return nil
+}
+
+func (x *GetFileResponse) GetFileName() string {
+	if x != nil {
+		return x.FileName
 	}
 	return ""
 }
@@ -617,17 +617,10 @@ const file_proto_api_proto_rawDesc = "" +
 	"cardNumber\x12\x14\n" +
 	"\x05valid\x18\x02 \x01(\tR\x05valid\x12\x12\n" +
 	"\x04code\x18\x03 \x01(\tR\x04code\x12 \n" +
-	"\vdescription\x18\x04 \x01(\tR\vdescription\":\n" +
-	"\x10PostDataResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\rR\x02id\x12\x16\n" +
-	"\x06length\x18\x02 \x01(\x04R\x06length\"f\n" +
-	"\x0fPostFileRequest\x12\x14\n" +
-	"\x05chunk\x18\x01 \x01(\fR\x05chunk\x12\x1b\n" +
-	"\tfile_name\x18\x02 \x01(\tR\bfileName\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\"L\n" +
-	"\x10PostFileResponse\x12\x1b\n" +
-	"\tfile_name\x18\x01 \x01(\tR\bfileName\x12\x1b\n" +
-	"\tfile_size\x18\x02 \x01(\x04R\bfileSize\"'\n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription\"A\n" +
+	"\x10PostDataResponse\x12\x15\n" +
+	"\x06row_id\x18\x01 \x01(\rR\x05rowId\x12\x16\n" +
+	"\x06length\x18\x02 \x01(\x04R\x06length\"'\n" +
 	"\x0eGetDataRequest\x12\x15\n" +
 	"\x06row_id\x18\x01 \x01(\rR\x05rowId\"\\\n" +
 	"\x0fGetCardResponse\x12\x1f\n" +
@@ -641,7 +634,14 @@ const file_proto_api_proto_rawDesc = "" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\"F\n" +
 	"\x12GetLogPassResponse\x12\x14\n" +
 	"\x05login\x18\x01 \x01(\tR\x05login\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword2\x9c\x03\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"f\n" +
+	"\x0fPostFileRequest\x12\x14\n" +
+	"\x05chunk\x18\x01 \x01(\fR\x05chunk\x12\x1b\n" +
+	"\tfile_name\x18\x02 \x01(\tR\bfileName\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\"D\n" +
+	"\x0fGetFileResponse\x12\x14\n" +
+	"\x05chunk\x18\x01 \x01(\fR\x05chunk\x12\x1b\n" +
+	"\tfile_name\x18\x02 \x01(\tR\bfileName2\xd4\x03\n" +
 	"\x12PassManagerService\x121\n" +
 	"\bRegister\x12\x11.api.LoginRequest\x1a\x12.api.LoginResponse\x12.\n" +
 	"\x05Login\x12\x11.api.LoginRequest\x1a\x12.api.LoginResponse\x127\n" +
@@ -650,7 +650,8 @@ const file_proto_api_proto_rawDesc = "" +
 	"\vPostLogPass\x12\x17.api.PostLogPassRequest\x1a\x15.api.PostDataResponse\x12:\n" +
 	"\n" +
 	"GetLogPass\x12\x13.api.GetDataRequest\x1a\x17.api.GetLogPassResponse\x129\n" +
-	"\bPostFile\x12\x14.api.PostFileRequest\x1a\x15.api.PostFileResponse(\x01B\vZ\tapi/protob\x06proto3"
+	"\bPostFile\x12\x14.api.PostFileRequest\x1a\x15.api.PostDataResponse(\x01\x126\n" +
+	"\aGetFile\x12\x13.api.GetDataRequest\x1a\x14.api.GetFileResponse0\x01B\vZ\tapi/protob\x06proto3"
 
 var (
 	file_proto_api_proto_rawDescOnce sync.Once
@@ -671,30 +672,32 @@ var file_proto_api_proto_goTypes = []any{
 	(*LoginResponse)(nil),      // 2: api.LoginResponse
 	(*PostCardRequest)(nil),    // 3: api.PostCardRequest
 	(*PostDataResponse)(nil),   // 4: api.PostDataResponse
-	(*PostFileRequest)(nil),    // 5: api.PostFileRequest
-	(*PostFileResponse)(nil),   // 6: api.PostFileResponse
-	(*GetDataRequest)(nil),     // 7: api.GetDataRequest
-	(*GetCardResponse)(nil),    // 8: api.GetCardResponse
-	(*PostLogPassRequest)(nil), // 9: api.PostLogPassRequest
-	(*GetLogPassResponse)(nil), // 10: api.GetLogPassResponse
+	(*GetDataRequest)(nil),     // 5: api.GetDataRequest
+	(*GetCardResponse)(nil),    // 6: api.GetCardResponse
+	(*PostLogPassRequest)(nil), // 7: api.PostLogPassRequest
+	(*GetLogPassResponse)(nil), // 8: api.GetLogPassResponse
+	(*PostFileRequest)(nil),    // 9: api.PostFileRequest
+	(*GetFileResponse)(nil),    // 10: api.GetFileResponse
 }
 var file_proto_api_proto_depIdxs = []int32{
 	1,  // 0: api.PassManagerService.Register:input_type -> api.LoginRequest
 	1,  // 1: api.PassManagerService.Login:input_type -> api.LoginRequest
 	3,  // 2: api.PassManagerService.PostCard:input_type -> api.PostCardRequest
-	7,  // 3: api.PassManagerService.GetCard:input_type -> api.GetDataRequest
-	9,  // 4: api.PassManagerService.PostLogPass:input_type -> api.PostLogPassRequest
-	7,  // 5: api.PassManagerService.GetLogPass:input_type -> api.GetDataRequest
-	5,  // 6: api.PassManagerService.PostFile:input_type -> api.PostFileRequest
-	2,  // 7: api.PassManagerService.Register:output_type -> api.LoginResponse
-	2,  // 8: api.PassManagerService.Login:output_type -> api.LoginResponse
-	4,  // 9: api.PassManagerService.PostCard:output_type -> api.PostDataResponse
-	8,  // 10: api.PassManagerService.GetCard:output_type -> api.GetCardResponse
-	4,  // 11: api.PassManagerService.PostLogPass:output_type -> api.PostDataResponse
-	10, // 12: api.PassManagerService.GetLogPass:output_type -> api.GetLogPassResponse
-	6,  // 13: api.PassManagerService.PostFile:output_type -> api.PostFileResponse
-	7,  // [7:14] is the sub-list for method output_type
-	0,  // [0:7] is the sub-list for method input_type
+	5,  // 3: api.PassManagerService.GetCard:input_type -> api.GetDataRequest
+	7,  // 4: api.PassManagerService.PostLogPass:input_type -> api.PostLogPassRequest
+	5,  // 5: api.PassManagerService.GetLogPass:input_type -> api.GetDataRequest
+	9,  // 6: api.PassManagerService.PostFile:input_type -> api.PostFileRequest
+	5,  // 7: api.PassManagerService.GetFile:input_type -> api.GetDataRequest
+	2,  // 8: api.PassManagerService.Register:output_type -> api.LoginResponse
+	2,  // 9: api.PassManagerService.Login:output_type -> api.LoginResponse
+	4,  // 10: api.PassManagerService.PostCard:output_type -> api.PostDataResponse
+	6,  // 11: api.PassManagerService.GetCard:output_type -> api.GetCardResponse
+	4,  // 12: api.PassManagerService.PostLogPass:output_type -> api.PostDataResponse
+	8,  // 13: api.PassManagerService.GetLogPass:output_type -> api.GetLogPassResponse
+	4,  // 14: api.PassManagerService.PostFile:output_type -> api.PostDataResponse
+	10, // 15: api.PassManagerService.GetFile:output_type -> api.GetFileResponse
+	8,  // [8:16] is the sub-list for method output_type
+	0,  // [0:8] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name

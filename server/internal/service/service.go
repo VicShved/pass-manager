@@ -60,7 +60,13 @@ func (s *PassManageService) Login(ctx context.Context, login string, password st
 	return tokenStr, err
 }
 
-func (s *PassManageService) SaveData(ctx context.Context, userID string, description string, dataType repository.DataType, buf []byte) (rowID uint32, fileSize uint64, err error) {
+func (s *PassManageService) SaveData(
+	ctx context.Context,
+	userID string,
+	description string,
+	dataType repository.DataType,
+	buf []byte,
+) (rowID uint32, fileSize uint64, err error) {
 
 	secretKey, err := generateHexKeyString(lecretKeyLength)
 	if err != nil {
@@ -162,47 +168,94 @@ func (s *PassManageService) GetLogPass(ctx context.Context, userID string, rowID
 	return logPass, err
 }
 
-func (s *PassManageService) PostFile(stream grpc.ClientStreamingServer[pb.PostFileRequest, pb.PostFileResponse], userID string) (string, uint64, error) {
+func (s *PassManageService) PostFile(
+	ctx context.Context,
+	stream grpc.ClientStreamingServer[pb.PostFileRequest, pb.PostDataResponse],
+	userID string,
+	dataType repository.DataType,
+) (rowID uint32, length uint64, err error) {
+	var secretKey string
 	var fileName string
+	var description string
 	var fileSize uint64
 	newFileName := getNewFileName("")
-	fileRepo, err := repository.GetFileStorageRepo("")
+	// get filestorage
+	fileStorage, err := s.repo.GetFileStorage(newFileName)
 	if err != nil {
-		logger.Log.Panic("PostFile", zap.Error(err))
-	}
-	fileStorage, err := fileRepo.GetFileStorage(newFileName)
-	if err != nil {
-		logger.Log.Panic("PostFile", zap.Error(err))
+		logger.Log.Error("PostFile", zap.Error(err))
+		return rowID, fileSize, err
 	}
 	defer fileStorage.Close()
+	// read stream to file
 	for {
 		req, err := stream.Recv()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			return newFileName, fileSize, err
+			return rowID, fileSize, err
 		}
 		if fileName == "" {
 			fileName = req.FileName
+			description = req.Description
 			_, err := fileStorage.OpenWrite()
 			if err != nil {
-				return newFileName, fileSize, err
+				return rowID, fileSize, err
 			}
-			// defer fileStorage.Close()
 		}
-		// file, err := os.OpenFile(newFileName, os.O_APPEND|os.O_WRONLY, 0644)
-		// if err != nil {
-		// 	return newFileName, fileSize, err
-		// }
 		n, err := fileStorage.Write(req.GetChunk())
 		if err != nil {
 			logger.Log.Error("PostFile fileStorage.Write", zap.Error(err))
+			return rowID, fileSize, err
+		}
+		fileSize += uint64(n)
+	}
+	rowID, err = s.repo.SaveData(ctx, userID, description, string(dataType), newFileName, secretKey)
 
-			return newFileName, fileSize, err
+	return rowID, fileSize, nil
+}
+
+func (s *PassManageService) GetFile(
+	ctx context.Context,
+	userID string,
+	rowID uint32,
+	stream grpc.ServerStreamingServer[pb.GetFileResponse],
+
+) (fileSize uint64, err error) {
+	userData, err := s.repo.GetUserData(ctx, userID, rowID)
+	if err != nil {
+		return fileSize, err
+	}
+
+	// get filestorage
+	fileStorage, err := s.repo.GetFileStorage(userData.FileName)
+	if err != nil {
+		logger.Log.Error("service.GetFile", zap.Error(err))
+		return fileSize, err
+	}
+	_, err = fileStorage.OpenRead()
+	if err != nil {
+		return fileSize, err
+	}
+	defer fileStorage.Close()
+	// read stream to file
+	buf := make([]byte, 4096) //  4096 вынести в настройки
+	var n int
+	for {
+		n, err = fileStorage.Read(buf)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return fileSize, err
+		}
+		message := pb.GetFileResponse{Chunk: buf[:n], FileName: userData.FileName}
+		err = stream.Send(&message)
+		if err != nil {
+			return fileSize, err
 		}
 		fileSize += uint64(n)
 	}
 
-	return newFileName, fileSize, nil
+	return fileSize, nil
 }
