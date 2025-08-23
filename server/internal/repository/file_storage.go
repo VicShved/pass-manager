@@ -8,7 +8,8 @@ import (
 	"go.uber.org/zap"
 )
 
-const suffix = "fstorage"
+// Ограничиваю доступ к файлам пользовательских данных
+const perm os.FileMode = 0600
 
 type FileStorage struct {
 	Path     string
@@ -23,22 +24,11 @@ type FileStorageRepo struct {
 // InitFileStorage - init path to filestorage
 func GetFileStorageRepo(storagePath string) (*FileStorageRepo, error) {
 	var fileStorageR FileStorageRepo
-	// if storagePath == "" {
-	// 	dir, err := os.Getwd()
-	// 	if err != nil {
-	// 		return &fileStorageR, err
-	// 	}
-	// 	storagePath = filepath.Join(dir, suffix)
-	// }
-	// _, err := os.Stat(storagePath)
-	// if errors.Is(err, fs.ErrNotExist) {
-	// 	err = os.MkdirAll(storagePath, 0666)
-	// }
-	// if err != nil {
-	// 	return &fileStorageR, err
-	// }
-
 	fileStorageR.fileStoragePath = storagePath
+	// err := os.MkdirAll(storagePath, 0666)
+	// if err != nil {
+	// 	return nil, err
+	// }
 	return &fileStorageR, nil
 }
 
@@ -46,9 +36,8 @@ func (s *FileStorageRepo) GetFileStorage(fileName string) (FileStoragerInterface
 	return &FileStorage{Path: s.fileStoragePath, FileName: fileName}, nil
 }
 
-func (r *FileStorage) getFilePath() string {
-	// return r.FileName
-	return filepath.Join(r.Path, r.FileName)
+func (r *FileStorage) getFilePath() (string, error) {
+	return filepath.Abs(filepath.Join(r.Path, r.FileName))
 }
 
 func (r *FileStorage) OpenWrite() (*os.File, error) {
@@ -60,9 +49,12 @@ func (r *FileStorage) OpenWrite() (*os.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	fpath := r.getFilePath()
+	fpath, err := r.getFilePath()
+	if err != nil {
+		return nil, err
+	}
 	logger.Log.Debug("OpenWrite", zap.String("file path", fpath))
-	file, err := os.OpenFile(fpath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0664)
+	file, err := os.OpenFile(fpath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, perm)
 	if err == nil {
 		r.file = file
 	} else {
@@ -80,7 +72,10 @@ func (r *FileStorage) OpenRead() (*os.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	fpath := r.getFilePath()
+	fpath, err := r.getFilePath()
+	if err != nil {
+		return nil, err
+	}
 	file, err := os.Open(fpath)
 	if err == nil {
 		r.file = file

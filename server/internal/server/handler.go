@@ -33,7 +33,7 @@ func (s GServer) Register(ctx context.Context, in *pb.LoginRequest) (*pb.LoginRe
 		return &response, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 	// Register
-	tokenStr, err := s.serv.Register(in.Login, in.Password)
+	tokenStr, err := s.serv.Register(ctx, in.Login, in.Password)
 	if err != nil {
 		return &response, status.Errorf(codes.InvalidArgument, err.Error())
 	}
@@ -53,7 +53,7 @@ func (s GServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginRespo
 		return &response, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 	// Login
-	tokenStr, err := s.serv.Login(in.Login, in.Password)
+	tokenStr, err := s.serv.Login(ctx, in.Login, in.Password)
 	if err != nil {
 		return &response, status.Errorf(codes.PermissionDenied, err.Error())
 	}
@@ -65,16 +65,73 @@ func (s GServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginRespo
 	return &response, nil
 }
 
-func (s GServer) PostCard(ctx context.Context, in *pb.PostCardRequest) (*pb.PostCardResponse, error) {
-	var response pb.PostCardResponse
+func (s GServer) PostCard(ctx context.Context, in *pb.PostCardRequest) (*pb.PostDataResponse, error) {
+	var response pb.PostDataResponse
 	userID := getUserID(ctx)
 	if userID == "" {
 		return &response, status.Errorf(codes.PermissionDenied, "Отсутствует токен/Не определен пользователь")
 	}
 	card := service.CardStruct{CardNumber: in.CardNumber, CardValid: in.Valid, CardCode: in.Code}
-	s.serv.PostCard(&ctx, card, in.Description, userID)
+	rowID, length, err := s.serv.PostCard(ctx, userID, card, in.Description)
+	if err != nil {
+		return &response, err
+	}
+	response.Id = rowID
+	response.Length = length
 
 	return &response, nil
+}
+
+func (s GServer) PostLogPass(ctx context.Context, in *pb.PostLogPassRequest) (*pb.PostDataResponse, error) {
+	var response pb.PostDataResponse
+	userID := getUserID(ctx)
+	if userID == "" {
+		return &response, status.Errorf(codes.PermissionDenied, "Отсутствует токен/Не определен пользователь")
+	}
+	logPass := service.LogPassStruct{Login: in.Login, Password: in.Password}
+	rowID, length, err := s.serv.PostLogPass(ctx, userID, logPass, in.Description)
+	if err != nil {
+		return &response, err
+	}
+	response.Id = rowID
+	response.Length = length
+
+	return &response, nil
+}
+
+func (s GServer) GetCard(ctx context.Context, in *pb.GetDataRequest) (*pb.GetCardResponse, error) {
+	var response pb.GetCardResponse
+	userID := getUserID(ctx)
+	if userID == "" {
+		return &response, status.Errorf(codes.PermissionDenied, "Отсутствует токен/Не определен пользователь")
+	}
+	card, err := s.serv.GetCard(ctx, userID, in.RowId)
+	if err != nil {
+		return &response, err
+	}
+	response.CardNumber = card.CardNumber
+	response.Valid = card.CardValid
+	response.Code = card.CardCode
+
+	return &response, nil
+
+}
+
+func (s GServer) GetLogPass(ctx context.Context, in *pb.GetDataRequest) (*pb.GetLogPassResponse, error) {
+	var response pb.GetLogPassResponse
+	userID := getUserID(ctx)
+	if userID == "" {
+		return &response, status.Errorf(codes.PermissionDenied, "Отсутствует токен/Не определен пользователь")
+	}
+	logPass, err := s.serv.GetLogPass(ctx, userID, in.RowId)
+	if err != nil {
+		return &response, err
+	}
+	response.Login = logPass.Login
+	response.Password = logPass.Password
+
+	return &response, nil
+
 }
 
 func (s GServer) PostFile(stream grpc.ClientStreamingServer[pb.PostFileRequest, pb.PostFileResponse]) error {
@@ -86,34 +143,6 @@ func (s GServer) PostFile(stream grpc.ClientStreamingServer[pb.PostFileRequest, 
 	if userID == "" {
 		return status.Errorf(codes.PermissionDenied, "Отсутствует токен/Не определен пользователь")
 	}
-	// for {
-	// 	req, err := stream.Recv()
-	// 	if err == io.EOF {
-	// 		break
-	// 	}
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	if fileName == "" {
-	// 		fileName = req.FileName
-	// 		file, err := os.Create(newFileName)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 		defer file.Close()
-	// 	}
-	// 	file, err := os.OpenFile(newFileName, os.O_APPEND|os.O_WRONLY, 0644)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	_, err = file.Write(req.GetChunk())
-	// 	if err != nil {
-	// 		file.Close()
-	// 		return err
-	// 	}
-	// 	file.Close()
-	// 	filelSize += uint64(len(req.GetChunk()))
-	// }
 	fileName, fileSize, err := s.serv.PostFile(stream, userID)
 	if err != nil {
 		return err

@@ -6,9 +6,6 @@ import (
 	"encoding/json"
 	"io"
 
-	// "os"
-	"strings"
-
 	"github.com/VicShved/pass-manager/server/internal/repository"
 	pb "github.com/VicShved/pass-manager/server/pkg/api/proto"
 	"github.com/VicShved/pass-manager/server/pkg/config"
@@ -17,6 +14,19 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
+
+// CardStruct
+type CardStruct struct {
+	CardNumber string `json:"card_number"`
+	CardValid  string `json:"card_valid"`
+	CardCode   string `json:"card_code"`
+}
+
+// LoginPassword Struct
+type LogPassStruct struct {
+	Login    string `json:"login"`
+	Password string `json:"password"`
+}
 
 // PassManageService struct
 type PassManageService struct {
@@ -29,9 +39,9 @@ func GetService(repo repository.RepoInterface, conf *config.ServerConfigStruct) 
 	return &PassManageService{repo: repo, conf: conf}
 }
 
-func (s *PassManageService) Register(login string, password string) (string, error) {
+func (s *PassManageService) Register(ctx context.Context, login string, password string) (string, error) {
 	userID, _ := GetNewUUID()
-	err := (*s).repo.Register(userID, login, utils.HashSha256(password))
+	err := (*s).repo.Register(ctx, userID, login, utils.HashSha256(password))
 	if err != nil {
 		return "", err
 	}
@@ -40,8 +50,8 @@ func (s *PassManageService) Register(login string, password string) (string, err
 	return tokenStr, err
 }
 
-func (s *PassManageService) Login(login string, password string) (string, error) {
-	userID, err := (*s).repo.Login(login, utils.HashSha256(password))
+func (s *PassManageService) Login(ctx context.Context, login string, password string) (string, error) {
+	userID, err := (*s).repo.Login(ctx, login, utils.HashSha256(password))
 	logger.Log.Debug("service.Login", zap.String("userID=", userID), zap.Error(err))
 	if err != nil {
 		return "", err
@@ -50,34 +60,106 @@ func (s *PassManageService) Login(login string, password string) (string, error)
 	return tokenStr, err
 }
 
-func getNewFileName(fileName string) string {
-	uuid, _ := GetNewUUID()
-	splits := strings.Split(fileName, ".")
-	ext := "unk"
-	if len(splits) > 1 {
-		ext = splits[len(splits)-1]
+func (s *PassManageService) SaveData(ctx context.Context, userID string, description string, dataType repository.DataType, buf []byte) (rowID uint32, fileSize uint64, err error) {
+
+	secretKey, err := generateHexKeyString(lecretKeyLength)
+	if err != nil {
+		return rowID, fileSize, err
 	}
-	return uuid + "." + ext
+
+	bufString, err := encryptData2Hex(buf, secretKey)
+	iobuf := bytes.NewReader([]byte(bufString))
+	newFileName := getNewFileName("")
+
+	buf = make([]byte, 1024)
+	fileStorage, err := s.repo.GetFileStorage(newFileName)
+	if err != nil {
+		logger.Log.Panic("PostFile", zap.Error(err))
+	}
+	defer fileStorage.Close()
+	fileStorage.OpenWrite()
+	for {
+		n, err := iobuf.Read(buf)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return rowID, fileSize, err
+		}
+		_, err = fileStorage.Write(buf[:n])
+		if err != nil {
+			logger.Log.Error("SaveData", zap.Error(err))
+
+			return rowID, fileSize, err
+		}
+		fileSize += uint64(n)
+	}
+	rowID, err = s.repo.SaveData(ctx, userID, description, string(dataType), newFileName, secretKey)
+	return rowID, fileSize, err
 }
 
-type CardStruct struct {
-	CardNumber string `json:"card_number"`
-	CardValid  string `json:"card_valid"`
-	CardCode   string `json:"card_code"`
-}
-
-func (s *PassManageService) PostCard(ctx *context.Context, card CardStruct, description string, userID string) error {
-	var secretKey string
+func (s *PassManageService) PostCard(ctx context.Context, userID string, card CardStruct, description string) (uint32, uint64, error) {
+	var rowID uint32
+	var fileSize uint64
 	buf, err := json.Marshal(card)
 	if err != nil {
-		return err
+		return rowID, fileSize, err
 	}
-	// secretKey = generateSecretKey() TODO add encrypt
-	// buf := encrypt(buf, secretKey)
-	iobuf := bytes.NewReader([]byte(buf))
-	newFileName := getNewFileName("")
-	s.repo.SaveData(iobuf)
 
+	rowID, fileSize, err = s.SaveData(ctx, userID, description, repository.DataTypeCard, buf)
+	return rowID, fileSize, err
+}
+
+func (s *PassManageService) PostLogPass(ctx context.Context, userID string, logPass LogPassStruct, description string) (uint32, uint64, error) {
+	var rowID uint32
+	var fileSize uint64
+	buf, err := json.Marshal(logPass)
+	if err != nil {
+		return rowID, fileSize, err
+	}
+	rowID, fileSize, err = s.SaveData(ctx, userID, description, repository.DataTypeLoginPassword, buf)
+	return rowID, fileSize, err
+}
+
+func (s *PassManageService) GetData(ctx context.Context, userID string, rowID uint32) (buf []byte, err error) {
+	userData, err := s.repo.GetUserData(ctx, userID, rowID)
+	if err != nil {
+		return buf, err
+	}
+	fileStorage, err := s.repo.GetFileStorage(userData.FileName)
+	if err != nil {
+		return buf, err
+	}
+	file, err := fileStorage.OpenRead()
+	if err != nil {
+		return buf, err
+	}
+	defer fileStorage.Close()
+	encbuf, err := io.ReadAll(file)
+	if err != nil {
+		return buf, err
+	}
+	buf, err = decryptHexData(string(encbuf), userData.SecretKey)
+	return buf, err
+
+}
+
+func (s *PassManageService) GetCard(ctx context.Context, userID string, rowID uint32) (card CardStruct, err error) {
+	buf, err := s.GetData(ctx, userID, rowID)
+	if err != nil {
+		return card, err
+	}
+	err = json.Unmarshal(buf, &card)
+	return card, err
+}
+
+func (s *PassManageService) GetLogPass(ctx context.Context, userID string, rowID uint32) (logPass LogPassStruct, err error) {
+	buf, err := s.GetData(ctx, userID, rowID)
+	if err != nil {
+		return logPass, err
+	}
+	err = json.Unmarshal(buf, &logPass)
+	return logPass, err
 }
 
 func (s *PassManageService) PostFile(stream grpc.ClientStreamingServer[pb.PostFileRequest, pb.PostFileResponse], userID string) (string, uint64, error) {
@@ -121,5 +203,6 @@ func (s *PassManageService) PostFile(stream grpc.ClientStreamingServer[pb.PostFi
 		}
 		fileSize += uint64(n)
 	}
+
 	return newFileName, fileSize, nil
 }

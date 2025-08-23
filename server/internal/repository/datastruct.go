@@ -7,12 +7,12 @@ import (
 )
 
 type LifeTimeModel struct {
-	ID        uint      `gorm:"primarykey"`
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime"`
 }
 
 type User struct {
+	ID uint `gorm:"primarykey"`
 	LifeTimeModel
 	UserID       string `gorm:"size:36;unique"`
 	Login        string `gorm:"size:256;unique"`
@@ -21,9 +21,10 @@ type User struct {
 }
 
 type UserData struct {
+	ID uint `gorm:"primarykey"`
 	LifeTimeModel
 	UserID      uint
-	DataType    string `gorm:"size:16"`
+	DataType    string `gorm:"type:varchar(16)"`
 	Description string `gorm:"type:text"`
 	FileName    string `gorm:"size:512"`
 	SecretKey   string `gorm:"size:1024"`

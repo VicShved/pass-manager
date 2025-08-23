@@ -1,7 +1,8 @@
 package service
 
 import (
-	"encoding/base64"
+	// "encoding/base64"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/hashicorp/go-uuid"
@@ -50,9 +51,17 @@ func GetNewUserIDToken(secretKey string) (string, string) {
 	return userID, token
 }
 
-const lengthSecretKey int = 32
+// func generateSecretKey() string {
+// 	key := make([]byte, lengthSecretKey)
+// 	return base64.URLEncoding.EncodeToString(key)
+// }
 
-func generateSecretKey() string {
-	key := make([]byte, lengthSecretKey)
-	return base64.URLEncoding.EncodeToString(key)
+func getNewFileName(fileName string) string {
+	uuid, _ := GetNewUUID()
+	splits := strings.Split(fileName, ".")
+	ext := "unk"
+	if len(splits) > 1 {
+		ext = splits[len(splits)-1]
+	}
+	return uuid + "." + ext
 }

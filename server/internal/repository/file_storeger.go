@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"io"
+	// "io"
 	"os"
 )
 
@@ -16,6 +16,6 @@ type FileStoragerInterface interface {
 	OpenRead() (*os.File, error)
 	Write(chunck []byte) (int, error)
 	Read(b []byte) (int, error)
-	ToFile(r io.Reader) (int, error)
+	// ToFile(r io.Reader) (int, error)
 	Close() error
 }

@@ -19,10 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	PassManagerService_Register_FullMethodName = "/api.PassManagerService/Register"
-	PassManagerService_Login_FullMethodName    = "/api.PassManagerService/Login"
-	PassManagerService_PostCard_FullMethodName = "/api.PassManagerService/PostCard"
-	PassManagerService_PostFile_FullMethodName = "/api.PassManagerService/PostFile"
+	PassManagerService_Register_FullMethodName    = "/api.PassManagerService/Register"
+	PassManagerService_Login_FullMethodName       = "/api.PassManagerService/Login"
+	PassManagerService_PostCard_FullMethodName    = "/api.PassManagerService/PostCard"
+	PassManagerService_GetCard_FullMethodName     = "/api.PassManagerService/GetCard"
+	PassManagerService_PostLogPass_FullMethodName = "/api.PassManagerService/PostLogPass"
+	PassManagerService_GetLogPass_FullMethodName  = "/api.PassManagerService/GetLogPass"
+	PassManagerService_PostFile_FullMethodName    = "/api.PassManagerService/PostFile"
 )
 
 // PassManagerServiceClient is the client API for PassManagerService service.
@@ -31,7 +34,10 @@ const (
 type PassManagerServiceClient interface {
 	Register(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
-	PostCard(ctx context.Context, in *PostCardRequest, opts ...grpc.CallOption) (*PostCardResponse, error)
+	PostCard(ctx context.Context, in *PostCardRequest, opts ...grpc.CallOption) (*PostDataResponse, error)
+	GetCard(ctx context.Context, in *GetDataRequest, opts ...grpc.CallOption) (*GetCardResponse, error)
+	PostLogPass(ctx context.Context, in *PostLogPassRequest, opts ...grpc.CallOption) (*PostDataResponse, error)
+	GetLogPass(ctx context.Context, in *GetDataRequest, opts ...grpc.CallOption) (*GetLogPassResponse, error)
 	PostFile(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[PostFileRequest, PostFileResponse], error)
 }
 
@@ -63,10 +69,40 @@ func (c *passManagerServiceClient) Login(ctx context.Context, in *LoginRequest, 
 	return out, nil
 }
 
-func (c *passManagerServiceClient) PostCard(ctx context.Context, in *PostCardRequest, opts ...grpc.CallOption) (*PostCardResponse, error) {
+func (c *passManagerServiceClient) PostCard(ctx context.Context, in *PostCardRequest, opts ...grpc.CallOption) (*PostDataResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PostCardResponse)
+	out := new(PostDataResponse)
 	err := c.cc.Invoke(ctx, PassManagerService_PostCard_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *passManagerServiceClient) GetCard(ctx context.Context, in *GetDataRequest, opts ...grpc.CallOption) (*GetCardResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetCardResponse)
+	err := c.cc.Invoke(ctx, PassManagerService_GetCard_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *passManagerServiceClient) PostLogPass(ctx context.Context, in *PostLogPassRequest, opts ...grpc.CallOption) (*PostDataResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PostDataResponse)
+	err := c.cc.Invoke(ctx, PassManagerService_PostLogPass_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *passManagerServiceClient) GetLogPass(ctx context.Context, in *GetDataRequest, opts ...grpc.CallOption) (*GetLogPassResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetLogPassResponse)
+	err := c.cc.Invoke(ctx, PassManagerService_GetLogPass_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +128,10 @@ type PassManagerService_PostFileClient = grpc.ClientStreamingClient[PostFileRequ
 type PassManagerServiceServer interface {
 	Register(context.Context, *LoginRequest) (*LoginResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
-	PostCard(context.Context, *PostCardRequest) (*PostCardResponse, error)
+	PostCard(context.Context, *PostCardRequest) (*PostDataResponse, error)
+	GetCard(context.Context, *GetDataRequest) (*GetCardResponse, error)
+	PostLogPass(context.Context, *PostLogPassRequest) (*PostDataResponse, error)
+	GetLogPass(context.Context, *GetDataRequest) (*GetLogPassResponse, error)
 	PostFile(grpc.ClientStreamingServer[PostFileRequest, PostFileResponse]) error
 	mustEmbedUnimplementedPassManagerServiceServer()
 }
@@ -110,8 +149,17 @@ func (UnimplementedPassManagerServiceServer) Register(context.Context, *LoginReq
 func (UnimplementedPassManagerServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedPassManagerServiceServer) PostCard(context.Context, *PostCardRequest) (*PostCardResponse, error) {
+func (UnimplementedPassManagerServiceServer) PostCard(context.Context, *PostCardRequest) (*PostDataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PostCard not implemented")
+}
+func (UnimplementedPassManagerServiceServer) GetCard(context.Context, *GetDataRequest) (*GetCardResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCard not implemented")
+}
+func (UnimplementedPassManagerServiceServer) PostLogPass(context.Context, *PostLogPassRequest) (*PostDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostLogPass not implemented")
+}
+func (UnimplementedPassManagerServiceServer) GetLogPass(context.Context, *GetDataRequest) (*GetLogPassResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLogPass not implemented")
 }
 func (UnimplementedPassManagerServiceServer) PostFile(grpc.ClientStreamingServer[PostFileRequest, PostFileResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method PostFile not implemented")
@@ -191,6 +239,60 @@ func _PassManagerService_PostCard_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PassManagerService_GetCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PassManagerServiceServer).GetCard(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PassManagerService_GetCard_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PassManagerServiceServer).GetCard(ctx, req.(*GetDataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PassManagerService_PostLogPass_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PostLogPassRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PassManagerServiceServer).PostLogPass(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PassManagerService_PostLogPass_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PassManagerServiceServer).PostLogPass(ctx, req.(*PostLogPassRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PassManagerService_GetLogPass_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PassManagerServiceServer).GetLogPass(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PassManagerService_GetLogPass_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PassManagerServiceServer).GetLogPass(ctx, req.(*GetDataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _PassManagerService_PostFile_Handler(srv interface{}, stream grpc.ServerStream) error {
 	return srv.(PassManagerServiceServer).PostFile(&grpc.GenericServerStream[PostFileRequest, PostFileResponse]{ServerStream: stream})
 }
@@ -216,6 +318,18 @@ var PassManagerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PostCard",
 			Handler:    _PassManagerService_PostCard_Handler,
+		},
+		{
+			MethodName: "GetCard",
+			Handler:    _PassManagerService_GetCard_Handler,
+		},
+		{
+			MethodName: "PostLogPass",
+			Handler:    _PassManagerService_PostLogPass_Handler,
+		},
+		{
+			MethodName: "GetLogPass",
+			Handler:    _PassManagerService_GetLogPass_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

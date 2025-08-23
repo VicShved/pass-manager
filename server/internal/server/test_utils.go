@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"io"
 	"log"
@@ -23,7 +24,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const bufSize = 1024 * 1024 * 100
+const bufSize = 1024 * 1024
 
 var lis *bufconn.Listener
 
@@ -56,7 +57,7 @@ func setup() (*GServer, *bufconn.Listener, *gorm.DB) {
 			log.Fatal("Start serve error")
 		}
 	}()
-	repo.DB = repo.DB.Begin()
+	repo.DB = repo.DB.Begin(&sql.TxOptions{Isolation: sql.LevelReadUncommitted})
 	return gserver, lis, repo.DB
 }
 
@@ -130,12 +131,12 @@ func doLogin(login string, password string) (codes.Code, string, error) {
 	return 0, testAuthToken, nil
 }
 
-func doPostCard(tokenStr string, cardNumber string, cardValid string, cardCode string) (codes.Code, string, error) {
+func doPostCard(tokenStr string, cardNumber string, cardValid string, cardCode string, description string) (codes.Code, uint32, error) {
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials((insecure.NewCredentials())))
 	if err != nil {
 		log.Fatal(err)
-		return 999, "", err
+		return 0, 0, err
 	}
 	defer conn.Close()
 
@@ -143,8 +144,8 @@ func doPostCard(tokenStr string, cardNumber string, cardValid string, cardCode s
 	md := metadata.Pairs(authorizationTokenName, tokenStr)
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	var headers metadata.MD
-	reqData := pb.PostCardRequest{CardNumber: cardNumber, Valid: cardValid, Code: cardCode}
-	_, err = client.PostCard(ctx, &reqData, grpc.Header(&headers))
+	reqData := pb.PostCardRequest{CardNumber: cardNumber, Valid: cardValid, Code: cardCode, Description: description}
+	response, err := client.PostCard(ctx, &reqData, grpc.Header(&headers))
 	grpcStatus := codes.OK
 	if status.Code(err) != codes.OK {
 		log.Printf(err.Error())
@@ -152,9 +153,96 @@ func doPostCard(tokenStr string, cardNumber string, cardValid string, cardCode s
 		if ok {
 			grpcStatus = st.Code()
 		}
-		return grpcStatus, "", err
+		return grpcStatus, 0, err
 	}
-	return 0, "", nil
+	return grpcStatus, response.Id, nil
+}
+
+func doPostLogPass(tokenStr string, login string, password string, description string) (codes.Code, uint32, error) {
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials((insecure.NewCredentials())))
+	if err != nil {
+		log.Fatal(err)
+		return 0, 0, err
+	}
+	defer conn.Close()
+
+	client := pb.NewPassManagerServiceClient(conn)
+	md := metadata.Pairs(authorizationTokenName, tokenStr)
+	ctx = metadata.NewOutgoingContext(ctx, md)
+	var headers metadata.MD
+	reqData := pb.PostLogPassRequest{Login: login, Password: password, Description: description}
+	response, err := client.PostLogPass(ctx, &reqData, grpc.Header(&headers))
+	grpcStatus := codes.OK
+	if status.Code(err) != codes.OK {
+		log.Printf(err.Error())
+		st, ok := status.FromError(err)
+		if ok {
+			grpcStatus = st.Code()
+		}
+		return grpcStatus, 0, err
+	}
+	return grpcStatus, response.Id, nil
+}
+
+func doGetCard(tokenStr string, rowID uint32) (grpcCode codes.Code, card service.CardStruct, err error) {
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials((insecure.NewCredentials())))
+	if err != nil {
+		log.Fatal(err)
+		return grpcCode, card, err
+	}
+	defer conn.Close()
+
+	client := pb.NewPassManagerServiceClient(conn)
+	md := metadata.Pairs(authorizationTokenName, tokenStr)
+	ctx = metadata.NewOutgoingContext(ctx, md)
+	var headers metadata.MD
+	reqData := pb.GetDataRequest{RowId: rowID}
+	response, err := client.GetCard(ctx, &reqData, grpc.Header(&headers))
+	grpcStatus := codes.OK
+	if status.Code(err) != codes.OK {
+		log.Printf(err.Error())
+		st, ok := status.FromError(err)
+		if ok {
+			grpcStatus = st.Code()
+		}
+		return grpcStatus, card, err
+	}
+	card.CardNumber = response.CardNumber
+	card.CardValid = response.Valid
+	card.CardCode = response.Code
+	return grpcStatus, card, nil
+}
+
+func doGetLogPass(tokenStr string, rowID uint32) (grpcCode codes.Code, logPass service.LogPassStruct, err error) {
+	ctx := context.Background()
+	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer), grpc.WithTransportCredentials((insecure.NewCredentials())))
+	if err != nil {
+		log.Fatal(err)
+		return grpcCode, logPass, err
+	}
+	defer conn.Close()
+
+	client := pb.NewPassManagerServiceClient(conn)
+	md := metadata.Pairs(authorizationTokenName, tokenStr)
+	ctx = metadata.NewOutgoingContext(ctx, md)
+	var headers metadata.MD
+	reqData := pb.GetDataRequest{RowId: rowID}
+	response, err := client.GetLogPass(ctx, &reqData, grpc.Header(&headers))
+	grpcStatus := codes.OK
+	if status.Code(err) != codes.OK {
+		log.Printf(err.Error())
+		st, ok := status.FromError(err)
+		if ok {
+			grpcStatus = st.Code()
+		}
+		return grpcStatus, logPass, err
+	}
+	logPass.Login = response.Login
+	logPass.Password = response.Password
+
+	return grpcStatus, logPass, nil
 }
 
 func doPostFile(tokenStr string, fileName string) (codes.Code, string, error) {
