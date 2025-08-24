@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/VicShved/pass-manager/pkg/config"
 	pb "github.com/VicShved/pass-manager/server/pkg/api/proto"
+	"github.com/VicShved/pass-manager/server/pkg/config"
 	"github.com/VicShved/pass-manager/server/pkg/logger"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
