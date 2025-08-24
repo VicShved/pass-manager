@@ -95,7 +95,7 @@ func doRegister(login string, password string) (codes.Code, string, error) {
 		}
 		return grpcStatus, "", err
 	}
-	authToken := header.Get(authorizationTokenName)[0]
+	authToken := header.Get(config.AuthorizationTokenName)[0]
 	if len(authToken) == 0 {
 		return 999, "", errors.New("Сервер не возвратил auth token")
 	}
@@ -125,7 +125,7 @@ func doLogin(login string, password string) (codes.Code, string, error) {
 		}
 		return grpcStatus, "", err
 	}
-	authToken := header.Get(authorizationTokenName)[0]
+	authToken := header.Get(config.AuthorizationTokenName)[0]
 	logger.Log.Info("doLogin", zap.String("tokenStr", authToken))
 	if len(authToken) == 0 {
 		return 999, "", errors.New("Сервер не возвратил auth token")
@@ -144,7 +144,7 @@ func doPostCard(tokenStr string, cardNumber string, cardValid string, cardCode s
 	defer conn.Close()
 
 	client := pb.NewPassManagerServiceClient(conn)
-	md := metadata.Pairs(authorizationTokenName, tokenStr)
+	md := metadata.Pairs(config.AuthorizationTokenName, tokenStr)
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	var headers metadata.MD
 	reqData := pb.PostCardRequest{CardNumber: cardNumber, Valid: cardValid, Code: cardCode, Description: description}
@@ -171,7 +171,7 @@ func doPostLogPass(tokenStr string, login string, password string, description s
 	defer conn.Close()
 
 	client := pb.NewPassManagerServiceClient(conn)
-	md := metadata.Pairs(authorizationTokenName, tokenStr)
+	md := metadata.Pairs(config.AuthorizationTokenName, tokenStr)
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	var headers metadata.MD
 	reqData := pb.PostLogPassRequest{Login: login, Password: password, Description: description}
@@ -198,7 +198,7 @@ func doGetCard(tokenStr string, rowID uint32) (grpcCode codes.Code, card service
 	defer conn.Close()
 
 	client := pb.NewPassManagerServiceClient(conn)
-	md := metadata.Pairs(authorizationTokenName, tokenStr)
+	md := metadata.Pairs(config.AuthorizationTokenName, tokenStr)
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	var headers metadata.MD
 	reqData := pb.GetDataRequest{RowId: rowID}
@@ -228,7 +228,7 @@ func doGetLogPass(tokenStr string, rowID uint32) (grpcCode codes.Code, logPass s
 	defer conn.Close()
 
 	client := pb.NewPassManagerServiceClient(conn)
-	md := metadata.Pairs(authorizationTokenName, tokenStr)
+	md := metadata.Pairs(config.AuthorizationTokenName, tokenStr)
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	var headers metadata.MD
 	reqData := pb.GetDataRequest{RowId: rowID}
@@ -266,7 +266,7 @@ func doPostFile(tokenStr string, fileName string) (grpcCode codes.Code, rowID ui
 	defer file.Close()
 	// create client & stream
 	client := pb.NewPassManagerServiceClient(conn)
-	md := metadata.Pairs(authorizationTokenName, tokenStr)
+	md := metadata.Pairs(config.AuthorizationTokenName, tokenStr)
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	stream, err := client.PostFile(ctx)
 	if err != nil {
@@ -316,7 +316,7 @@ func doGetFile(tokenStr string, rowID uint32) (grpcCode codes.Code, fileName str
 	defer conn.Close()
 	// create client & stream
 	client := pb.NewPassManagerServiceClient(conn)
-	md := metadata.Pairs(authorizationTokenName, tokenStr)
+	md := metadata.Pairs(config.AuthorizationTokenName, tokenStr)
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	inData := pb.GetDataRequest{RowId: rowID}
 	stream, err := client.GetFile(ctx, &inData)

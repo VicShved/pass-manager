@@ -1,7 +1,7 @@
 package main
 
-import "fmt"
+import "github.com/VicShved/pass-manager/client/internal/tui"
 
 func main() {
-	fmt.Println("In client")
+	tui.StartTui()
 }

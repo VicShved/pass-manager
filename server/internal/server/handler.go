@@ -6,6 +6,7 @@ import (
 	"github.com/VicShved/pass-manager/server/internal/repository"
 	"github.com/VicShved/pass-manager/server/internal/service"
 	pb "github.com/VicShved/pass-manager/server/pkg/api/proto"
+	"github.com/VicShved/pass-manager/server/pkg/config"
 	"github.com/VicShved/pass-manager/server/pkg/logger"
 	"github.com/VicShved/pass-manager/server/pkg/utils"
 	"go.uber.org/zap"
@@ -39,7 +40,7 @@ func (s GServer) Register(ctx context.Context, in *pb.LoginRequest) (*pb.LoginRe
 		return &response, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 	// Token str add to header
-	authHeader := metadata.Pairs(authorizationTokenName, tokenStr)
+	authHeader := metadata.Pairs(config.AuthorizationTokenName, tokenStr)
 	_ = grpc.SetHeader(ctx, authHeader)
 
 	response.Token = tokenStr
@@ -59,7 +60,7 @@ func (s GServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginRespo
 		return &response, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 	// Token str add to header
-	authHeader := metadata.Pairs(authorizationTokenName, tokenStr)
+	authHeader := metadata.Pairs(config.AuthorizationTokenName, tokenStr)
 	_ = grpc.SetHeader(ctx, authHeader)
 
 	response.Token = tokenStr

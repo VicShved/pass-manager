@@ -21,7 +21,7 @@ func getUserFromContext(ctx context.Context) (userID string) {
 	if !exists {
 		logger.Log.Warn("authUnaryInterceptor hasnt metadata")
 	}
-	tokens := md.Get(authorizationTokenName)
+	tokens := md.Get(config.AuthorizationTokenName)
 	logger.Log.Debug("getUserFromContext", zap.Any("Tokens=", tokens))
 	if (len(tokens) > 0) && (len(tokens[0]) > 0) {
 		token, userID, err = service.ParseTokenUserID(tokens[0], config.ServerConfig.SecretKey)
