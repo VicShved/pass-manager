@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	pb "github.com/VicShved/pass-manager/server/pkg/api/proto"
-	"github.com/VicShved/pass-manager/server/pkg/config"
 	"github.com/VicShved/pass-manager/server/pkg/logger"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -15,9 +14,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// AuthorizationTokenName is name of header
+const AuthorizationTokenName string = "Authorization"
 const serverAddress string = "localhost:7777"
 
-func doRegister(login string, password string) (grpcCode codes.Code, tokenStr string, err error) {
+func DoRegister(login string, password string) (grpcCode codes.Code, tokenStr string, err error) {
 	ctx := context.Background()
 	conn, err := grpc.NewClient(serverAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -38,7 +39,7 @@ func doRegister(login string, password string) (grpcCode codes.Code, tokenStr st
 		}
 		return grpcCode, tokenStr, err
 	}
-	authToken := header.Get(config.AuthorizationTokenName)[0]
+	authToken := header.Get(AuthorizationTokenName)[0]
 	if len(authToken) == 0 {
 		return 999, "", errors.New("Сервер не возвратил auth token")
 	}

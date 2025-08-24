@@ -1,15 +1,22 @@
 package tui
 
 import (
+	"github.com/VicShved/pass-manager/client/internal/client"
 	"github.com/rivo/tview"
 )
 
 func regLog(app *tview.Application, pages *tview.Pages) *tview.Form {
 	form := tview.NewForm()
 	form.Box.SetBorder(true).SetTitle("Веедите логин/пароль")
-	form.AddInputField("Login", "enter login", 20, nil, nil)
+	form.AddInputField("Login", "", 20, nil, nil)
 	form.AddInputField("Password", "enter password", 20, nil, nil)
 	form.AddButton("Register", func() {
+		login := form.GetFormItemByLabel("Login").(*tview.InputField).GetText()
+		pswrd := form.GetFormItemByLabel("Password").(*tview.InputField).GetText()
+		_, _, err := client.DoRegister(login, pswrd)
+		if err != nil {
+			panic(err)
+		}
 		app.SetFocus(pages.SendToFront("mainMenuPage"))
 	},
 	)

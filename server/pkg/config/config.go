@@ -27,7 +27,7 @@ type ServerConfigStruct struct {
 var ServerConfig ServerConfigStruct
 
 func getConfigArgsEnvVars() *ServerConfigStruct {
-	flag.StringVar(&ServerConfig.ServerAddress, "a", "localhost:8080", "start base url")
+	flag.StringVar(&ServerConfig.ServerAddress, "a", "localhost:7777", "start base url")
 	// flag.StringVar(&ServerConfig.BaseURL, "b", "http://localhost:8080", "result base url")
 	flag.StringVar(&ServerConfig.FileStoragePath, "f", "", "file storage path")
 	flag.BoolVar(&ServerConfig.EnableTLS, "s", false, "enable tls")
