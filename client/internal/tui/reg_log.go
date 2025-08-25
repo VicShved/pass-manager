@@ -5,18 +5,20 @@ import (
 	"github.com/rivo/tview"
 )
 
-func regLog(app *tview.Application, pages *tview.Pages) *tview.Form {
+func regLog(app *tuiApplication, pages *tview.Pages) *tview.Form {
 	form := tview.NewForm()
 	form.Box.SetBorder(true).SetTitle("Веедите логин/пароль")
 	form.AddInputField("Login", "", 20, nil, nil)
 	form.AddInputField("Password", "enter password", 20, nil, nil)
-	form.AddButton("Register", func() {
+	form.AddButton("Login", func() {
 		login := form.GetFormItemByLabel("Login").(*tview.InputField).GetText()
 		pswrd := form.GetFormItemByLabel("Password").(*tview.InputField).GetText()
-		_, _, err := client.DoRegister(login, pswrd)
-		if err != nil {
-			panic(err)
+		_, tokenStr, err := client.DoLogin(login, pswrd)
+		if err == nil {
+			app.tokenStr = tokenStr
 		}
+		modal := getModal(app, pages, "Успешная авторизация!", "Ошибка авторизации! ", err)
+		pages.AddAndSwitchToPage("Modal", modal, false)
 		app.SetFocus(pages.SendToFront("mainMenuPage"))
 	},
 	)
@@ -24,16 +26,17 @@ func regLog(app *tview.Application, pages *tview.Pages) *tview.Form {
 		app.SetFocus(pages.SendToFront("mainMenuPage"))
 	},
 	)
-	form.AddButton("Login", func() {
+	form.AddButton("Register", func() {
+		login := form.GetFormItemByLabel("Login").(*tview.InputField).GetText()
+		pswrd := form.GetFormItemByLabel("Password").(*tview.InputField).GetText()
+		_, tokenStr, err := client.DoRegister(login, pswrd)
+		if err == nil {
+			app.tokenStr = tokenStr
+		}
+		modal := getModal(app, pages, "Успешная регистрация!", "Ошибка регистрации! ", err)
+		pages.AddAndSwitchToPage("Modal", modal, false)
 		app.SetFocus(pages.SendToFront("mainMenuPage"))
 	},
 	)
-
-	// modal.AddButtons([]string{"Quit", "Cancel"})
-	// modal.SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-	// 	if buttonLabel == "Quit" {
-	// 		app.Stop()
-	// 	}
-	// })
 	return form
 }
