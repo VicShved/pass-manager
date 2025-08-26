@@ -14,22 +14,31 @@ const AuthorizationTokenName string = "Authorization"
 // ClientConfigStruct
 type ClientConfigStruct struct {
 	ServerAddress  string `json:"server_address"`
+	ServerPort     string `json:"server_port"`
 	ConfigFileName string
 	LogLevel       string `json:"log_level"`
+	EnableTLS      bool   `json:"enable_tls"`
 }
 
 // ClientConfig
 var ClientConfig ClientConfigStruct
 
 func getConfigArgsEnvVars() *ClientConfigStruct {
-	flag.StringVar(&ClientConfig.ServerAddress, "a", "localhost:7777", "server url:port")
+	flag.StringVar(&ClientConfig.ServerAddress, "a", "localhost", "server url")
+	flag.StringVar(&ClientConfig.ServerPort, "p", "7777", "server port")
 	flag.StringVar(&ClientConfig.ConfigFileName, "f", "", "config from file")
 	flag.StringVar(&ClientConfig.LogLevel, "l", "INFO", "Log level")
+	flag.BoolVar(&ClientConfig.EnableTLS, "s", false, "TLS connection with server")
 	flag.Parse()
 
 	value, exists := os.LookupEnv("SERVER_ADDRESS")
 	if exists {
 		ClientConfig.ServerAddress = value
+	}
+
+	value, exists = os.LookupEnv("SERVER_PORT")
+	if exists {
+		ClientConfig.ServerPort = value
 	}
 	return &ClientConfig
 }
@@ -53,6 +62,10 @@ func updateConfig(target *ClientConfigStruct, source *ClientConfigStruct) *Clien
 	if target.ServerAddress == "" {
 		target.ServerAddress = source.ServerAddress
 	}
+	if target.ServerPort == "" {
+		target.ServerAddress = source.ServerAddress
+	}
+
 	return target
 }
 

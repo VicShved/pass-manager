@@ -31,4 +31,9 @@ go.work.sum
 # .idea/
 # .vscode/
 server/internal/server/staticcheck_linux_386.tar.gz
+
+# test data
 *.unk
+
+# logs
+*.log

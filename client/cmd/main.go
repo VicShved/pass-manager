@@ -7,7 +7,9 @@ import "github.com/VicShved/pass-manager/client/internal/tui"
 // go:generate env GOOS=windows GOARCH=amd64 go build -ldflags "-X config.Version=v0.1 -X 'main.BuildTime=$(date )'" -o client_win.exe main.go
 
 var (
-	Version   string
+	// Version -  client version
+	Version string
+	// BuildTime - client build time
 	BuildTime string
 )
 

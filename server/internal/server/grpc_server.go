@@ -1,7 +1,9 @@
 package server
 
 import (
+	"crypto/tls"
 	"net"
+	"os"
 
 	"github.com/VicShved/pass-manager/server/internal/service"
 	pb "github.com/VicShved/pass-manager/server/pkg/api/proto"
@@ -16,18 +18,30 @@ import (
 // GServer
 type GServer struct {
 	pb.UnimplementedPassManagerServiceServer
-	serv     *service.PassManageService
-	server   *grpc.Server
-	listener *net.Listener
+	serv        *service.PassManageService
+	server      *grpc.Server
+	listener    *net.Listener
+	certManager *autocert.Manager
 }
 
-func getTLSCreds(domain string) grpc.ServerOption {
+func getCertManager(serverAddress string) *autocert.Manager {
 	manager := autocert.Manager{
 		Cache:      autocert.DirCache("certs"),
 		Prompt:     autocert.AcceptTOS,
-		HostPolicy: autocert.HostWhitelist(domain),
+		HostPolicy: autocert.HostWhitelist(serverAddress),
 	}
-	tlsConfig := manager.TLSConfig()
+	return &manager
+}
+
+func getTLSCreds(manager *autocert.Manager, logFile *os.File) grpc.ServerOption {
+	// tlsConfig := manager.TLSConfig()
+	tlsConfig := &tls.Config{
+		GetCertificate: manager.GetCertificate,
+		MinVersion:     tls.VersionTLS12,
+	}
+	if logFile != nil {
+		tlsConfig.KeyLogWriter = logFile
+	}
 	// Create gRPC transport credentials
 	creds := credentials.NewTLS(tlsConfig)
 	return grpc.Creds(creds)
@@ -36,11 +50,18 @@ func getTLSCreds(domain string) grpc.ServerOption {
 
 // GetServer return grpc.Server with serverOptions
 func GetServer(serv *service.PassManageService, conf *config.ServerConfigStruct) (*GServer, error) {
+	gServer := GServer{serv: serv}
 	var serverOptions []grpc.ServerOption
 	serverOptions = append(serverOptions, grpc.ChainUnaryInterceptor(AuthUnaryInterceptor))
 	serverOptions = append(serverOptions, grpc.ChainStreamInterceptor(AuthStreamInterceptor))
 	if conf.EnableTLS {
-		serverOptions = append(serverOptions, getTLSCreds(conf.ServerAddress))
+		m := getCertManager(conf.ServerAddress)
+		gServer.certManager = m
+		var tlsLogFile *os.File
+		if conf.LogLevel == "DEBUG" {
+			tlsLogFile, _ = os.OpenFile("tls_debug.log", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+		}
+		serverOptions = append(serverOptions, getTLSCreds(m, tlsLogFile))
 		logger.Log.Debug("GetServer: Add tls creds to server")
 	}
 	server := grpc.NewServer(
@@ -53,7 +74,9 @@ func GetServer(serv *service.PassManageService, conf *config.ServerConfigStruct)
 	// grpc.MaxSendMsgSize(1024*1024*1024),
 	// grpc.ConnectionTimeout(60000),
 	)
-	gServer := GServer{serv: serv, server: server}
+
+	gServer.server = server
+
 	pb.RegisterPassManagerServiceServer(server, gServer)
 	return &gServer, nil
 }
@@ -62,7 +85,11 @@ func GetServer(serv *service.PassManageService, conf *config.ServerConfigStruct)
 func (s *GServer) StartServe(lis *net.Listener, conf *config.ServerConfigStruct) error {
 	logger.Log.Debug("StartServe", zap.String("conf.ServerAddress", conf.ServerAddress), zap.String("port", conf.ServerPort))
 	s.listener = lis
-	return s.server.Serve(*lis)
+	if s.certManager != nil {
+		newListener := tls.NewListener(*lis, s.certManager.TLSConfig())
+		s.listener = &newListener
+	}
+	return s.server.Serve(*s.listener)
 }
 
 // GracefulStop stop server and listener gracefully
