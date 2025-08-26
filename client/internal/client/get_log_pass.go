@@ -9,14 +9,13 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
-func DoGetLogPass(tokenStr string, rowID uint32) (grpcStatus codes.Code, logPassStr string, err error) {
+func (c GClient) DoGetLogPass(tokenStr string, rowID uint32) (grpcStatus codes.Code, logPassStr string, err error) {
 	ctx := context.Background()
-	conn, err := grpc.NewClient(serverAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := c.getConnection()
 	if err != nil {
 		logger.Log.Error("DoGetLogPass", zap.Error(err))
 		return grpcStatus, logPassStr, err
@@ -24,8 +23,7 @@ func DoGetLogPass(tokenStr string, rowID uint32) (grpcStatus codes.Code, logPass
 	defer conn.Close()
 
 	client := pb.NewPassManagerServiceClient(conn)
-	md := metadata.Pairs(AuthorizationTokenName, tokenStr)
-	ctx = metadata.NewOutgoingContext(ctx, md)
+	ctx = c.addToken2Context(ctx, tokenStr)
 	var headers metadata.MD
 	reqData := pb.GetDataRequest{RowId: rowID}
 	response, err := client.GetLogPass(ctx, &reqData, grpc.Header(&headers))

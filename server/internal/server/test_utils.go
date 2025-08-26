@@ -31,7 +31,8 @@ const bufSize = 1024 * 1024
 
 var lis *bufconn.Listener
 
-var serverAddress = ":8080"
+var serverAddress = ""
+var serverPort = "8080"
 var secretKey = "VerySecret"
 
 func setup() (*GServer, *bufconn.Listener, *gorm.DB) {
@@ -41,6 +42,8 @@ func setup() (*GServer, *bufconn.Listener, *gorm.DB) {
 	}
 	conf := config.GetServerConfig()
 	conf.ServerAddress = serverAddress
+	conf.ServerPort = serverPort
+	conf.EnableTLS = false
 	conf.SecretKey = secretKey
 	conf.SchemaName = "test_passmanager"
 	conf.DBDSN = "postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"

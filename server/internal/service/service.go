@@ -226,7 +226,6 @@ func (s *PassManageService) GetFile(
 	if err != nil {
 		return fileSize, err
 	}
-
 	// get filestorage
 	fileStorage, err := s.repo.GetFileStorage(userData.FileName)
 	if err != nil {
@@ -256,6 +255,5 @@ func (s *PassManageService) GetFile(
 		}
 		fileSize += uint64(n)
 	}
-
 	return fileSize, nil
 }

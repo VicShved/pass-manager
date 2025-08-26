@@ -3,7 +3,6 @@ package tui
 import (
 	"strconv"
 
-	"github.com/VicShved/pass-manager/client/internal/client"
 	"github.com/rivo/tview"
 )
 
@@ -19,7 +18,7 @@ func getCard(app *tuiApplication, pages *tview.Pages) *tview.Form {
 			modal = getModal(app, pages, "", "Ошибка конвертации '"+rowIDStr+"' в целое число. Введите корректное число!", err)
 
 		} else {
-			_, dataStr, err := client.DoGetCard(app.tokenStr, uint32(rowID))
+			_, dataStr, err := app.client.DoGetCard(app.tokenStr, uint32(rowID))
 			modal = getModal(app, pages, "Полученные данные!\n"+dataStr, "Данные с таким ID отсутствуют! ", err)
 		}
 

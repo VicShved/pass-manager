@@ -132,11 +132,13 @@ func (r GormRepository) SaveData(ctx context.Context, userID string, desc string
 	return uint32(userData.ID), err
 }
 
-func (r GormRepository) GetUserData(ctx context.Context, userID string, rowID uint32) (userData UserData, err error) {
+func (r GormRepository) GetUserData(ctx context.Context, userID string, rowID uint32) (UserData, error) {
+	userData := UserData{}
 	user, err := r.GetUserByUserID(ctx, userID)
 	if err != nil {
 		return userData, err
 	}
+	logger.Log.Debug("GetUserData", zap.String("userID", userID), zap.Uint32("rowID", rowID))
 	result := r.DB.WithContext(ctx).Where(&UserData{ID: uint(rowID), UserID: user.ID}).First(&userData)
 	return userData, result.Error
 }

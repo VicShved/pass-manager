@@ -12,7 +12,7 @@ const AuthorizationTokenName string = "Authorization"
 // type ServerConfigStruct
 type ServerConfigStruct struct {
 	ServerAddress   string `json:"server_address"`
-	BaseURL         string `json:"base_url"`
+	ServerPort      string `json:"port"`
 	FileStoragePath string `json:"file_storage_path"`
 	DBDSN           string `json:"database_dsn"`
 	SecretKey       string
@@ -20,21 +20,20 @@ type ServerConfigStruct struct {
 	EnableTLS       bool `json:"enable_tls"`
 	ConfigFileName  string
 	SchemaName      string
-	// TrustedSubnet   string `json:"trusted_subnet"`
 }
 
 // var ServerConfig
 var ServerConfig ServerConfigStruct
 
 func getConfigArgsEnvVars() *ServerConfigStruct {
-	flag.StringVar(&ServerConfig.ServerAddress, "a", "localhost:7777", "start base url")
-	// flag.StringVar(&ServerConfig.BaseURL, "b", "http://localhost:8080", "result base url")
+	flag.StringVar(&ServerConfig.ServerAddress, "a", "localhost", "start base url")
+	flag.StringVar(&ServerConfig.ServerPort, "p", "7777", "port")
 	flag.StringVar(&ServerConfig.FileStoragePath, "f", "", "file storage path")
 	flag.BoolVar(&ServerConfig.EnableTLS, "s", false, "enable tls")
 	flag.StringVar(&ServerConfig.DBDSN, "d", "", "DataBase DSN")
 	flag.StringVar(&ServerConfig.SecretKey, "k", "VeryImpotantSecretKey.YesYes", "Secret key")
 	flag.StringVar(&ServerConfig.LogLevel, "l", "INFO", "Log level")
-	// flag.StringVar(&ServerConfig.TrustedSubnet, "t", "", "Trusted subnet")
+	flag.StringVar(&ServerConfig.ConfigFileName, "c", "", "Config from file")
 	flag.Parse()
 
 	value, exists := os.LookupEnv("SERVER_ADDRESS")
@@ -42,9 +41,9 @@ func getConfigArgsEnvVars() *ServerConfigStruct {
 		ServerConfig.ServerAddress = value
 	}
 
-	value, exists = os.LookupEnv("BASE_URL")
+	value, exists = os.LookupEnv("SERVER_PORT")
 	if exists {
-		ServerConfig.BaseURL = value
+		ServerConfig.ServerPort = value
 	}
 
 	value, exists = os.LookupEnv("FILE_STORAGE_PATH")
@@ -52,10 +51,10 @@ func getConfigArgsEnvVars() *ServerConfigStruct {
 		ServerConfig.FileStoragePath = value
 	}
 
-	// value, exists = os.LookupEnv("DATABASE_DSN")
-	// if exists {
-	// 	ServerConfig.DBDSN = value
-	// }
+	value, exists = os.LookupEnv("DATABASE_DSN")
+	if exists {
+		ServerConfig.DBDSN = value
+	}
 
 	value, exists = os.LookupEnv("SECRET_KEY")
 	if exists {
@@ -66,12 +65,6 @@ func getConfigArgsEnvVars() *ServerConfigStruct {
 	if exists {
 		ServerConfig.LogLevel = value
 	}
-
-	// value, exists = os.LookupEnv("TRUSTED_SUBNET")
-	// if exists {
-	// 	ServerConfig.TrustedSubnet = value
-	// }
-
 	return &ServerConfig
 }
 
@@ -94,8 +87,8 @@ func updateConfig(target *ServerConfigStruct, source *ServerConfigStruct) *Serve
 	if target.ServerAddress == "" {
 		target.ServerAddress = source.ServerAddress
 	}
-	if target.BaseURL == "" {
-		target.BaseURL = source.BaseURL
+	if target.ServerPort == "" {
+		target.ServerPort = source.ServerPort
 	}
 	if target.FileStoragePath == "" {
 		target.FileStoragePath = source.FileStoragePath
@@ -106,7 +99,7 @@ func updateConfig(target *ServerConfigStruct, source *ServerConfigStruct) *Serve
 	return target
 }
 
-// func GetServerConfig
+// GetServerConfig return app config
 func GetServerConfig() *ServerConfigStruct {
 	serverConfig := getConfigArgsEnvVars()
 	if serverConfig.ConfigFileName != "" {

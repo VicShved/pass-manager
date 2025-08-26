@@ -9,25 +9,26 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
-func DoGetCard(tokenStr string, rowID uint32) (grpcStatus codes.Code, cardStr string, err error) {
+// DoGetCard Получение данных карты
+func (c GClient) DoGetCard(tokenStr string, rowID uint32) (grpcStatus codes.Code, cardStr string, err error) {
 	ctx := context.Background()
-	conn, err := grpc.NewClient(serverAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := c.getConnection()
 	if err != nil {
 		logger.Log.Error("DoGetCard", zap.Error(err))
 		return grpcStatus, cardStr, err
 	}
 	defer conn.Close()
 
-	client := pb.NewPassManagerServiceClient(conn)
-	md := metadata.Pairs(AuthorizationTokenName, tokenStr)
-	ctx = metadata.NewOutgoingContext(ctx, md)
+	// md := metadata.Pairs(config.AuthorizationTokenName, tokenStr)
+	// ctx = metadata.NewOutgoingContext(ctx, md)
+	ctx = c.addToken2Context(ctx, tokenStr)
 	var headers metadata.MD
 	reqData := pb.GetDataRequest{RowId: rowID}
+	client := pb.NewPassManagerServiceClient(conn)
 	response, err := client.GetCard(ctx, &reqData, grpc.Header(&headers))
 	grpcStatus = codes.OK
 	if status.Code(err) != codes.OK {

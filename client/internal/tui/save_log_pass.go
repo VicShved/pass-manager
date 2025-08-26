@@ -3,7 +3,6 @@ package tui
 import (
 	"strconv"
 
-	"github.com/VicShved/pass-manager/client/internal/client"
 	"github.com/rivo/tview"
 )
 
@@ -21,7 +20,7 @@ func saveLogPass(app *tuiApplication, pages *tview.Pages) *tview.Form {
 		login := form.GetFormItemByLabel("Login").(*tview.InputField).GetText()
 		password := form.GetFormItemByLabel("Password").(*tview.InputField).GetText()
 		desc := form.GetFormItemByLabel("Description").(*tview.InputField).GetText()
-		_, rowID, err := client.DoSaveLogPass(app.tokenStr, login, password, desc)
+		_, rowID, err := app.client.DoSaveLogPass(app.tokenStr, login, password, desc)
 		modal := getModal(app, pages, "Успешная запись! Идентификатор = "+strconv.FormatUint(uint64(rowID), 10), "Ошибка записи! ", err)
 		pages.AddAndSwitchToPage("Modal", modal, false)
 		app.SetFocus(pages.SendToFront("mainMenuPage"))

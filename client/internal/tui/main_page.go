@@ -1,17 +1,29 @@
 package tui
 
-import "github.com/rivo/tview"
+import (
+	"github.com/VicShved/pass-manager/client/internal/client"
+	"github.com/VicShved/pass-manager/client/internal/config"
+	"github.com/rivo/tview"
+)
 
 type tuiApplication struct {
 	tview.Application
-	serverUrl string
+	// serverUrl string
 	tokenStr  string
+	client    *client.GClient
+	version   string
+	buildTime string
 }
 
 // StartTui run text user innterface
-func StartTui() {
+func StartTui(version string, buildTime string) {
+	conf := config.GetClientConfig()
+	gClient := client.GetgClient(*conf)
 	app := tuiApplication{
 		Application: *tview.NewApplication(),
+		client:      gClient,
+		version:     version,
+		buildTime:   buildTime,
 	}
 	pages := tview.NewPages()
 	mainMenuPage := mainMenu(&app, pages)

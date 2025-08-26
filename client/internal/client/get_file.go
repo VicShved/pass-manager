@@ -13,16 +13,15 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
-func DoGetFile(tokenStr string, rowID uint32) (grpcStatus codes.Code, fileName string, err error) {
+func (c GClient) DoGetFile(tokenStr string, rowID uint32) (grpcStatus codes.Code, fileName string, err error) {
 	var file *os.File
 	var fileSize int
 	ctx := context.Background()
-	conn, err := grpc.NewClient(serverAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := c.getConnection()
 	if err != nil {
 		logger.Log.Error("DoGetFile", zap.Error(err))
 		return grpcStatus, fileName, err
@@ -31,10 +30,11 @@ func DoGetFile(tokenStr string, rowID uint32) (grpcStatus codes.Code, fileName s
 
 	// create client & stream
 	client := pb.NewPassManagerServiceClient(conn)
-	md := metadata.Pairs(AuthorizationTokenName, tokenStr)
-	ctx = metadata.NewOutgoingContext(ctx, md)
-	inData := pb.GetDataRequest{RowId: rowID}
-	stream, err := client.GetFile(ctx, &inData)
+	var headers metadata.MD
+	ctx = c.addToken2Context(ctx, tokenStr)
+	reqData := pb.GetDataRequest{RowId: rowID}
+	logger.Log.Debug("DoGetFile", zap.Any("pb.GetDataRequest", reqData))
+	stream, err := client.GetFile(ctx, &reqData, grpc.Header(&headers))
 	if err != nil {
 		logger.Log.Error("DoGetFile", zap.Error(err))
 		return status.Code(err), fileName, err

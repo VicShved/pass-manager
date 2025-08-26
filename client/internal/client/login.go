@@ -4,21 +4,21 @@ import (
 	"context"
 	"errors"
 
+	"github.com/VicShved/pass-manager/client/internal/config"
 	pb "github.com/VicShved/pass-manager/server/pkg/api/proto"
 	"github.com/VicShved/pass-manager/server/pkg/logger"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
-func DoLogin(login string, password string) (grpcStatus codes.Code, tokenStr string, err error) {
+func (c GClient) DoLogin(login string, password string) (grpcStatus codes.Code, tokenStr string, err error) {
 	ctx := context.Background()
-	conn, err := grpc.NewClient(serverAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := c.getConnection()
 	if err != nil {
-		logger.Log.Error("doLogin", zap.Error(err))
+		logger.Log.Error("DoLogin", zap.Error(err))
 		return grpcStatus, tokenStr, err
 	}
 	defer conn.Close()
@@ -35,7 +35,7 @@ func DoLogin(login string, password string) (grpcStatus codes.Code, tokenStr str
 		}
 		return grpcStatus, tokenStr, err
 	}
-	authToken := header.Get(AuthorizationTokenName)[0]
+	authToken := header.Get(config.AuthorizationTokenName)[0]
 	if len(authToken) == 0 {
 		return grpcStatus, tokenStr, errors.New("Сервер не возвратил auth token")
 	}

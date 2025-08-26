@@ -8,15 +8,14 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
 // DoSaveCard save data card to server
-func DoSaveCard(tokenStr string, cardNumber string, cardValid string, cardCode string, description string) (gprcStatus codes.Code, rowID uint32, err error) {
+func (c GClient) DoSaveCard(tokenStr string, cardNumber string, cardValid string, cardCode string, description string) (gprcStatus codes.Code, rowID uint32, err error) {
 	ctx := context.Background()
-	conn, err := grpc.NewClient(serverAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := c.getConnection()
 	if err != nil {
 		logger.Log.Error("DoSaveCard", zap.Error(err))
 		return gprcStatus, rowID, err
@@ -24,8 +23,7 @@ func DoSaveCard(tokenStr string, cardNumber string, cardValid string, cardCode s
 	defer conn.Close()
 
 	client := pb.NewPassManagerServiceClient(conn)
-	md := metadata.Pairs(AuthorizationTokenName, tokenStr)
-	ctx = metadata.NewOutgoingContext(ctx, md)
+	ctx = c.addToken2Context(ctx, tokenStr)
 	var headers metadata.MD
 	reqData := pb.PostCardRequest{CardNumber: cardNumber, Valid: cardValid, Code: cardCode, Description: description}
 	response, err := client.PostCard(ctx, &reqData, grpc.Header(&headers))

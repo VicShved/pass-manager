@@ -1,7 +1,6 @@
 package tui
 
 import (
-	"github.com/VicShved/pass-manager/client/internal/client"
 	"github.com/rivo/tview"
 )
 
@@ -13,7 +12,7 @@ func regLog(app *tuiApplication, pages *tview.Pages) *tview.Form {
 	form.AddButton("Login", func() {
 		login := form.GetFormItemByLabel("Login").(*tview.InputField).GetText()
 		pswrd := form.GetFormItemByLabel("Password").(*tview.InputField).GetText()
-		_, tokenStr, err := client.DoLogin(login, pswrd)
+		_, tokenStr, err := app.client.DoLogin(login, pswrd)
 		if err == nil {
 			app.tokenStr = tokenStr
 		}
@@ -29,7 +28,7 @@ func regLog(app *tuiApplication, pages *tview.Pages) *tview.Form {
 	form.AddButton("Register", func() {
 		login := form.GetFormItemByLabel("Login").(*tview.InputField).GetText()
 		pswrd := form.GetFormItemByLabel("Password").(*tview.InputField).GetText()
-		_, tokenStr, err := client.DoRegister(login, pswrd)
+		_, tokenStr, err := app.client.DoRegister(login, pswrd)
 		if err == nil {
 			app.tokenStr = tokenStr
 		}

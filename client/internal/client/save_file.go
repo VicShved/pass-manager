@@ -8,17 +8,14 @@ import (
 	pb "github.com/VicShved/pass-manager/server/pkg/api/proto"
 	"github.com/VicShved/pass-manager/server/pkg/logger"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
-func DoSaveFile(tokenStr string, fileName string, description string) (grpcStatus codes.Code, rowID uint32, err error) {
+func (c GClient) DoSaveFile(tokenStr string, fileName string, description string) (grpcStatus codes.Code, rowID uint32, err error) {
 	// create connection
 	ctx := context.Background()
-	conn, err := grpc.NewClient(serverAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := c.getConnection()
 	if err != nil {
 		logger.Log.Error("DoSaveLogPass", zap.Error(err))
 		return grpcStatus, rowID, err
@@ -34,8 +31,7 @@ func DoSaveFile(tokenStr string, fileName string, description string) (grpcStatu
 	defer file.Close()
 	// create client & stream
 	client := pb.NewPassManagerServiceClient(conn)
-	md := metadata.Pairs(AuthorizationTokenName, tokenStr)
-	ctx = metadata.NewOutgoingContext(ctx, md)
+	ctx = c.addToken2Context(ctx, tokenStr)
 	stream, err := client.PostFile(ctx)
 	if err != nil {
 		return status.Code(err), rowID, err

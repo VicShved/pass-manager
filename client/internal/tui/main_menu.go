@@ -1,6 +1,8 @@
 package tui
 
-import "github.com/rivo/tview"
+import (
+	"github.com/rivo/tview"
+)
 
 func mainMenu(app *tuiApplication, pages *tview.Pages) tview.Primitive {
 	list := tview.NewList()
@@ -35,6 +37,12 @@ func mainMenu(app *tuiApplication, pages *tview.Pages) tview.Primitive {
 	list.AddItem("Get File", "", 'f', func() {
 		pages.ShowPage("getFile")
 		app.SetFocus(pages.SendToFront("getFile"))
+	})
+	list.AddItem("---------------------------------------------------------------------", "", rune(0), nil)
+	list.AddItem("About Client", "", 'f', func() {
+		modal := getModal(app, pages, "Version = "+app.version+"\nBuild time = "+app.buildTime, "", nil)
+		pages.AddAndSwitchToPage("Modal", modal, false)
+		app.SetFocus(pages.SendToFront("mainMenuPage"))
 	})
 	list.AddItem("---------------------------------------------------------------------", "", rune(0), nil)
 	list.AddItem("Exit", "", 'e', func() { app.Stop() })

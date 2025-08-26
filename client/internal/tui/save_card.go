@@ -3,7 +3,6 @@ package tui
 import (
 	"strconv"
 
-	"github.com/VicShved/pass-manager/client/internal/client"
 	"github.com/rivo/tview"
 )
 
@@ -23,7 +22,7 @@ func saveCard(app *tuiApplication, pages *tview.Pages) *tview.Form {
 		cardValid := form.GetFormItemByLabel("Card Valid").(*tview.InputField).GetText()
 		cardCode := form.GetFormItemByLabel("Card Code").(*tview.InputField).GetText()
 		cardDesc := form.GetFormItemByLabel("Description").(*tview.InputField).GetText()
-		_, rowID, err := client.DoSaveCard(app.tokenStr, cardNumber, cardValid, cardCode, cardDesc)
+		_, rowID, err := app.client.DoSaveCard(app.tokenStr, cardNumber, cardValid, cardCode, cardDesc)
 		modal := getModal(app, pages, "Успешная запись! Идентификатор = "+strconv.FormatUint(uint64(rowID), 10), "Ошибка записи! ", err)
 		pages.AddAndSwitchToPage("Modal", modal, false)
 		app.SetFocus(pages.SendToFront("mainMenuPage"))

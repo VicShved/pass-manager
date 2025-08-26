@@ -158,7 +158,7 @@ func (s GServer) PostFile(stream grpc.ClientStreamingServer[pb.PostFileRequest, 
 
 func (s GServer) GetFile(in *pb.GetDataRequest, stream grpc.ServerStreamingServer[pb.GetFileResponse]) error {
 	logger.Log.Info("Start PostFile")
-	var rowID uint32
+	rowID := in.RowId
 	ctx := stream.Context()
 	userID := getUserID(ctx)
 	if userID == "" {

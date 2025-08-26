@@ -63,7 +63,9 @@ func RunServer() {
 		close(idleChan)
 	}(gserver)
 
-	lis, err := net.Listen("tcp", conf.ServerAddress)
+	listenAddress := ":" + conf.ServerPort
+	logger.Log.Debug("RunServer", zap.String("listenAddress", listenAddress))
+	lis, err := net.Listen("tcp", listenAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
