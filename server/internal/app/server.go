@@ -16,6 +16,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// RunServer prepareand start grpc server application
 func RunServer() {
 	// Get app config
 	var conf = config.GetServerConfig()

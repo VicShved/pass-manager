@@ -19,14 +19,14 @@ var users = map[string]userStruct{
 		userID:       "userID1"},
 }
 
-type TestRepository struct {
+type testRepository struct {
 	conf     *config.ServerConfigStruct
 	fileRepo FileStoragerRepoInterface
 }
 
 // GetGormRepo(dns string)
-func GetTestRepo(conf *config.ServerConfigStruct, fileRepo FileStoragerRepoInterface) (*TestRepository, error) {
-	repo := &TestRepository{
+func GetTestRepo(conf *config.ServerConfigStruct, fileRepo FileStoragerRepoInterface) (*testRepository, error) {
+	repo := &testRepository{
 		conf:     conf,
 		fileRepo: fileRepo,
 	}
@@ -34,11 +34,11 @@ func GetTestRepo(conf *config.ServerConfigStruct, fileRepo FileStoragerRepoInter
 }
 
 // CloseConn Close connection
-func (r TestRepository) CloseConn() error {
+func (r testRepository) CloseConn() error {
 	return nil
 }
 
-func (r TestRepository) Register(userID string, login string, hashPassword string) error {
+func (r testRepository) register(userID string, login string, hashPassword string) error {
 	logger.Log.Debug("Register user = ", zap.String("userID", userID), zap.String("login", login), zap.String("hashPassword", hashPassword))
 	_, exists := users[login]
 	if exists {
@@ -48,7 +48,7 @@ func (r TestRepository) Register(userID string, login string, hashPassword strin
 	return nil
 }
 
-func (r TestRepository) Login(login string, hashPassword string) (string, error) {
+func (r testRepository) login(login string, hashPassword string) (string, error) {
 	logger.Log.Debug("Login", zap.String("login", login), zap.String("hashPassword", hashPassword))
 	value, exists := users[login]
 	if !exists {

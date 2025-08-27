@@ -12,8 +12,6 @@ import (
 // ErrParseToken Error parse token
 var ErrParseToken = errors.New("Error parse token")
 
-// var ErrCreateToken = errors.New("Error create token")
-
 const tokenPrefix string = "Bearer"
 
 // SigningMethod set as jwt.SigningMethodHS512
@@ -21,8 +19,8 @@ var SigningMethod = jwt.SigningMethodHS512
 
 // GetNewUUID return UUID
 func GetNewUUID() (string, error) {
-	userID, err := uuid.GenerateUUID()
-	return string(userID), err
+	id, err := uuid.GenerateUUID()
+	return string(id), err
 }
 
 // custClaims struct
@@ -60,17 +58,6 @@ func GetJWTTokenString(userID *string, secretKey string) (string, error) {
 	tokenStr = tokenPrefix + " " + tokenStr
 	return tokenStr, err
 }
-
-// func GetNewUserIDToken(secretKey string) (string, string) {
-// 	userID, _ := GetNewUUID()
-// 	token, _ := GetJWTTokenString(&userID, secretKey)
-// 	return userID, token
-// }
-
-// func generateSecretKey() string {
-// 	key := make([]byte, lengthSecretKey)
-// 	return base64.URLEncoding.EncodeToString(key)
-// }
 
 func getNewFileName(fileName string) string {
 	uuid, _ := GetNewUUID()

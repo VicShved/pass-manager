@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-// GServer
+// GServer struct for application grpc server
 type GServer struct {
 	pb.UnimplementedPassManagerServiceServer
 	serv        *service.PassManageService

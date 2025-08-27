@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// DoGetLogPass   get login/password pair from server
 func (c GClient) DoGetLogPass(tokenStr string, rowID uint32) (grpcStatus codes.Code, logPassStr string, err error) {
 	ctx := context.Background()
 	conn, err := c.getConnection()

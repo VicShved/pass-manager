@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// DoSaveFile save file on server
 func (c GClient) DoSaveFile(tokenStr string, fileName string, description string) (grpcStatus codes.Code, rowID uint32, err error) {
 	// create connection
 	ctx := context.Background()

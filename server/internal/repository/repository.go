@@ -15,6 +15,11 @@ type RepoInterface interface {
 	CloseConn() error
 }
 
+// ErrLoginConflict this login exists
 var ErrLoginConflict = errors.New("Login conflict")
+
+// ErrLoginPassword login/password invalid
 var ErrLoginPassword = errors.New("Login/Password error")
+
+// ErrUserIdFromToken invlid userID from token
 var ErrUserIdFromToken = errors.New("DB hasnt User from token")

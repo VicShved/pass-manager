@@ -20,7 +20,7 @@ type ClientConfigStruct struct {
 	EnableTLS      bool   `json:"enable_tls"`
 }
 
-// ClientConfig
+// ClientConfig tui application config
 var ClientConfig ClientConfigStruct
 
 func getConfigArgsEnvVars() *ClientConfigStruct {
@@ -69,7 +69,7 @@ func updateConfig(target *ClientConfigStruct, source *ClientConfigStruct) *Clien
 	return target
 }
 
-// GetServerConfig
+// GetServerConfig return application config data
 func GetClientConfig() *ClientConfigStruct {
 	clientConfig := getConfigArgsEnvVars()
 	if clientConfig.ConfigFileName != "" {

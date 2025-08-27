@@ -14,6 +14,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// DoRegister register user on server
 func (c GClient) DoRegister(login string, password string) (grpcCode codes.Code, tokenStr string, err error) {
 	ctx := context.Background()
 	conn, err := c.getConnection()
