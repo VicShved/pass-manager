@@ -36,3 +36,4 @@ go.work.sum
 
 # logs
 *.log
+server/internal/server/staticcheck_linux_386.tar.gz
