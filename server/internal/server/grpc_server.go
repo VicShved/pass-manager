@@ -35,10 +35,7 @@ func getCertManager(serverAddress string) *autocert.Manager {
 
 func getTLSCreds(manager *autocert.Manager, logFile *os.File) grpc.ServerOption {
 	// tlsConfig := manager.TLSConfig()
-	tlsConfig := &tls.Config{
-		GetCertificate: manager.GetCertificate,
-		MinVersion:     tls.VersionTLS12,
-	}
+	tlsConfig := manager.TLSConfig()
 	if logFile != nil {
 		tlsConfig.KeyLogWriter = logFile
 	}
