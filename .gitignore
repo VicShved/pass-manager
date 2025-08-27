@@ -30,3 +30,6 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+*.unk
+server/internal/server/staticcheck_linux_386.tar.gz
+*.log
