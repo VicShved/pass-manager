@@ -21,6 +21,58 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type DataType int32
+
+const (
+	DataType_TYPE_ANY     DataType = 0
+	DataType_TYPE_LOGPASS DataType = 1
+	DataType_TYPE_CARD    DataType = 2
+	DataType_TYPE_FILE    DataType = 3
+)
+
+// Enum value maps for DataType.
+var (
+	DataType_name = map[int32]string{
+		0: "TYPE_ANY",
+		1: "TYPE_LOGPASS",
+		2: "TYPE_CARD",
+		3: "TYPE_FILE",
+	}
+	DataType_value = map[string]int32{
+		"TYPE_ANY":     0,
+		"TYPE_LOGPASS": 1,
+		"TYPE_CARD":    2,
+		"TYPE_FILE":    3,
+	}
+)
+
+func (x DataType) Enum() *DataType {
+	p := new(DataType)
+	*p = x
+	return p
+}
+
+func (x DataType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (DataType) Descriptor() protoreflect.EnumDescriptor {
+	return file_proto_api_proto_enumTypes[0].Descriptor()
+}
+
+func (DataType) Type() protoreflect.EnumType {
+	return &file_proto_api_proto_enumTypes[0]
+}
+
+func (x DataType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use DataType.Descriptor instead.
+func (DataType) EnumDescriptor() ([]byte, []int) {
+	return file_proto_api_proto_rawDescGZIP(), []int{0}
+}
+
 type Empty struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -601,6 +653,162 @@ func (x *GetFileResponse) GetFileName() string {
 	return ""
 }
 
+type GetDataInfoRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DataType      DataType               `protobuf:"varint,1,opt,name=data_type,json=dataType,proto3,enum=api.DataType" json:"data_type,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetDataInfoRequest) Reset() {
+	*x = GetDataInfoRequest{}
+	mi := &file_proto_api_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDataInfoRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDataInfoRequest) ProtoMessage() {}
+
+func (x *GetDataInfoRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_api_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDataInfoRequest.ProtoReflect.Descriptor instead.
+func (*GetDataInfoRequest) Descriptor() ([]byte, []int) {
+	return file_proto_api_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *GetDataInfoRequest) GetDataType() DataType {
+	if x != nil {
+		return x.DataType
+	}
+	return DataType_TYPE_ANY
+}
+
+type DataInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RowId         uint32                 `protobuf:"varint,1,opt,name=row_id,json=rowId,proto3" json:"row_id,omitempty"`
+	DataType      string                 `protobuf:"bytes,2,opt,name=data_type,json=dataType,proto3" json:"data_type,omitempty"`
+	Desc          string                 `protobuf:"bytes,3,opt,name=desc,proto3" json:"desc,omitempty"`
+	FileName      string                 `protobuf:"bytes,4,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DataInfo) Reset() {
+	*x = DataInfo{}
+	mi := &file_proto_api_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DataInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DataInfo) ProtoMessage() {}
+
+func (x *DataInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_api_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DataInfo.ProtoReflect.Descriptor instead.
+func (*DataInfo) Descriptor() ([]byte, []int) {
+	return file_proto_api_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *DataInfo) GetRowId() uint32 {
+	if x != nil {
+		return x.RowId
+	}
+	return 0
+}
+
+func (x *DataInfo) GetDataType() string {
+	if x != nil {
+		return x.DataType
+	}
+	return ""
+}
+
+func (x *DataInfo) GetDesc() string {
+	if x != nil {
+		return x.Desc
+	}
+	return ""
+}
+
+func (x *DataInfo) GetFileName() string {
+	if x != nil {
+		return x.FileName
+	}
+	return ""
+}
+
+type GetDataInfoResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserData      []*DataInfo            `protobuf:"bytes,1,rep,name=user_data,json=userData,proto3" json:"user_data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetDataInfoResponse) Reset() {
+	*x = GetDataInfoResponse{}
+	mi := &file_proto_api_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDataInfoResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDataInfoResponse) ProtoMessage() {}
+
+func (x *GetDataInfoResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_api_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDataInfoResponse.ProtoReflect.Descriptor instead.
+func (*GetDataInfoResponse) Descriptor() ([]byte, []int) {
+	return file_proto_api_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *GetDataInfoResponse) GetUserData() []*DataInfo {
+	if x != nil {
+		return x.UserData
+	}
+	return nil
+}
+
 var File_proto_api_proto protoreflect.FileDescriptor
 
 const file_proto_api_proto_rawDesc = "" +
@@ -641,7 +849,21 @@ const file_proto_api_proto_rawDesc = "" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\"D\n" +
 	"\x0fGetFileResponse\x12\x14\n" +
 	"\x05chunk\x18\x01 \x01(\fR\x05chunk\x12\x1b\n" +
-	"\tfile_name\x18\x02 \x01(\tR\bfileName2\xd4\x03\n" +
+	"\tfile_name\x18\x02 \x01(\tR\bfileName\"@\n" +
+	"\x12GetDataInfoRequest\x12*\n" +
+	"\tdata_type\x18\x01 \x01(\x0e2\r.api.DataTypeR\bdataType\"o\n" +
+	"\bDataInfo\x12\x15\n" +
+	"\x06row_id\x18\x01 \x01(\rR\x05rowId\x12\x1b\n" +
+	"\tdata_type\x18\x02 \x01(\tR\bdataType\x12\x12\n" +
+	"\x04desc\x18\x03 \x01(\tR\x04desc\x12\x1b\n" +
+	"\tfile_name\x18\x04 \x01(\tR\bfileName\"A\n" +
+	"\x13GetDataInfoResponse\x12*\n" +
+	"\tuser_data\x18\x01 \x03(\v2\r.api.DataInfoR\buserData*H\n" +
+	"\bDataType\x12\f\n" +
+	"\bTYPE_ANY\x10\x00\x12\x10\n" +
+	"\fTYPE_LOGPASS\x10\x01\x12\r\n" +
+	"\tTYPE_CARD\x10\x02\x12\r\n" +
+	"\tTYPE_FILE\x10\x032\x96\x04\n" +
 	"\x12PassManagerService\x121\n" +
 	"\bRegister\x12\x11.api.LoginRequest\x1a\x12.api.LoginResponse\x12.\n" +
 	"\x05Login\x12\x11.api.LoginRequest\x1a\x12.api.LoginResponse\x127\n" +
@@ -651,7 +873,8 @@ const file_proto_api_proto_rawDesc = "" +
 	"\n" +
 	"GetLogPass\x12\x13.api.GetDataRequest\x1a\x17.api.GetLogPassResponse\x129\n" +
 	"\bPostFile\x12\x14.api.PostFileRequest\x1a\x15.api.PostDataResponse(\x01\x126\n" +
-	"\aGetFile\x12\x13.api.GetDataRequest\x1a\x14.api.GetFileResponse0\x01B\vZ\tapi/protob\x06proto3"
+	"\aGetFile\x12\x13.api.GetDataRequest\x1a\x14.api.GetFileResponse0\x01\x12@\n" +
+	"\vGetDataInfo\x12\x17.api.GetDataInfoRequest\x1a\x18.api.GetDataInfoResponseB\vZ\tapi/protob\x06proto3"
 
 var (
 	file_proto_api_proto_rawDescOnce sync.Once
@@ -665,42 +888,51 @@ func file_proto_api_proto_rawDescGZIP() []byte {
 	return file_proto_api_proto_rawDescData
 }
 
-var file_proto_api_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_proto_api_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_proto_api_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_proto_api_proto_goTypes = []any{
-	(*Empty)(nil),              // 0: api.Empty
-	(*LoginRequest)(nil),       // 1: api.LoginRequest
-	(*LoginResponse)(nil),      // 2: api.LoginResponse
-	(*PostCardRequest)(nil),    // 3: api.PostCardRequest
-	(*PostDataResponse)(nil),   // 4: api.PostDataResponse
-	(*GetDataRequest)(nil),     // 5: api.GetDataRequest
-	(*GetCardResponse)(nil),    // 6: api.GetCardResponse
-	(*PostLogPassRequest)(nil), // 7: api.PostLogPassRequest
-	(*GetLogPassResponse)(nil), // 8: api.GetLogPassResponse
-	(*PostFileRequest)(nil),    // 9: api.PostFileRequest
-	(*GetFileResponse)(nil),    // 10: api.GetFileResponse
+	(DataType)(0),               // 0: api.DataType
+	(*Empty)(nil),               // 1: api.Empty
+	(*LoginRequest)(nil),        // 2: api.LoginRequest
+	(*LoginResponse)(nil),       // 3: api.LoginResponse
+	(*PostCardRequest)(nil),     // 4: api.PostCardRequest
+	(*PostDataResponse)(nil),    // 5: api.PostDataResponse
+	(*GetDataRequest)(nil),      // 6: api.GetDataRequest
+	(*GetCardResponse)(nil),     // 7: api.GetCardResponse
+	(*PostLogPassRequest)(nil),  // 8: api.PostLogPassRequest
+	(*GetLogPassResponse)(nil),  // 9: api.GetLogPassResponse
+	(*PostFileRequest)(nil),     // 10: api.PostFileRequest
+	(*GetFileResponse)(nil),     // 11: api.GetFileResponse
+	(*GetDataInfoRequest)(nil),  // 12: api.GetDataInfoRequest
+	(*DataInfo)(nil),            // 13: api.DataInfo
+	(*GetDataInfoResponse)(nil), // 14: api.GetDataInfoResponse
 }
 var file_proto_api_proto_depIdxs = []int32{
-	1,  // 0: api.PassManagerService.Register:input_type -> api.LoginRequest
-	1,  // 1: api.PassManagerService.Login:input_type -> api.LoginRequest
-	3,  // 2: api.PassManagerService.PostCard:input_type -> api.PostCardRequest
-	5,  // 3: api.PassManagerService.GetCard:input_type -> api.GetDataRequest
-	7,  // 4: api.PassManagerService.PostLogPass:input_type -> api.PostLogPassRequest
-	5,  // 5: api.PassManagerService.GetLogPass:input_type -> api.GetDataRequest
-	9,  // 6: api.PassManagerService.PostFile:input_type -> api.PostFileRequest
-	5,  // 7: api.PassManagerService.GetFile:input_type -> api.GetDataRequest
-	2,  // 8: api.PassManagerService.Register:output_type -> api.LoginResponse
-	2,  // 9: api.PassManagerService.Login:output_type -> api.LoginResponse
-	4,  // 10: api.PassManagerService.PostCard:output_type -> api.PostDataResponse
-	6,  // 11: api.PassManagerService.GetCard:output_type -> api.GetCardResponse
-	4,  // 12: api.PassManagerService.PostLogPass:output_type -> api.PostDataResponse
-	8,  // 13: api.PassManagerService.GetLogPass:output_type -> api.GetLogPassResponse
-	4,  // 14: api.PassManagerService.PostFile:output_type -> api.PostDataResponse
-	10, // 15: api.PassManagerService.GetFile:output_type -> api.GetFileResponse
-	8,  // [8:16] is the sub-list for method output_type
-	0,  // [0:8] is the sub-list for method input_type
-	0,  // [0:0] is the sub-list for extension type_name
-	0,  // [0:0] is the sub-list for extension extendee
-	0,  // [0:0] is the sub-list for field type_name
+	0,  // 0: api.GetDataInfoRequest.data_type:type_name -> api.DataType
+	13, // 1: api.GetDataInfoResponse.user_data:type_name -> api.DataInfo
+	2,  // 2: api.PassManagerService.Register:input_type -> api.LoginRequest
+	2,  // 3: api.PassManagerService.Login:input_type -> api.LoginRequest
+	4,  // 4: api.PassManagerService.PostCard:input_type -> api.PostCardRequest
+	6,  // 5: api.PassManagerService.GetCard:input_type -> api.GetDataRequest
+	8,  // 6: api.PassManagerService.PostLogPass:input_type -> api.PostLogPassRequest
+	6,  // 7: api.PassManagerService.GetLogPass:input_type -> api.GetDataRequest
+	10, // 8: api.PassManagerService.PostFile:input_type -> api.PostFileRequest
+	6,  // 9: api.PassManagerService.GetFile:input_type -> api.GetDataRequest
+	12, // 10: api.PassManagerService.GetDataInfo:input_type -> api.GetDataInfoRequest
+	3,  // 11: api.PassManagerService.Register:output_type -> api.LoginResponse
+	3,  // 12: api.PassManagerService.Login:output_type -> api.LoginResponse
+	5,  // 13: api.PassManagerService.PostCard:output_type -> api.PostDataResponse
+	7,  // 14: api.PassManagerService.GetCard:output_type -> api.GetCardResponse
+	5,  // 15: api.PassManagerService.PostLogPass:output_type -> api.PostDataResponse
+	9,  // 16: api.PassManagerService.GetLogPass:output_type -> api.GetLogPassResponse
+	5,  // 17: api.PassManagerService.PostFile:output_type -> api.PostDataResponse
+	11, // 18: api.PassManagerService.GetFile:output_type -> api.GetFileResponse
+	14, // 19: api.PassManagerService.GetDataInfo:output_type -> api.GetDataInfoResponse
+	11, // [11:20] is the sub-list for method output_type
+	2,  // [2:11] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_proto_api_proto_init() }
@@ -713,13 +945,14 @@ func file_proto_api_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_api_proto_rawDesc), len(file_proto_api_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   11,
+			NumEnums:      1,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_proto_api_proto_goTypes,
 		DependencyIndexes: file_proto_api_proto_depIdxs,
+		EnumInfos:         file_proto_api_proto_enumTypes,
 		MessageInfos:      file_proto_api_proto_msgTypes,
 	}.Build()
 	File_proto_api_proto = out.File

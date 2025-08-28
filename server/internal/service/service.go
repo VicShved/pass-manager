@@ -267,3 +267,25 @@ func (s *PassManageService) GetFile(
 	}
 	return fileSize, nil
 }
+
+func (s *PassManageService) GetDataInfo(ctx context.Context, userID string, dataType int) ([]UserData, error) {
+	convert := map[int]string{
+		0: "",
+		1: string(repository.DataTypeLoginPassword),
+		2: string(repository.DataTypeCard),
+		3: string(repository.DataTypeFile),
+	}
+	dataTypeStr := convert[dataType]
+	userDatas, err := s.repo.GetUserDatas(ctx, userID, dataTypeStr)
+	if err != nil {
+		return nil, err
+	}
+	results := make([]UserData, len(userDatas))
+	for i, ud := range userDatas {
+		results[i].RowID = uint32(ud.ID)
+		results[i].Desc = ud.Description
+		results[i].DataType = ud.DataType
+	}
+	return results, err
+
+}

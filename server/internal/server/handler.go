@@ -139,7 +139,6 @@ func (s GServer) GetLogPass(ctx context.Context, in *pb.GetDataRequest) (*pb.Get
 	response.Password = logPass.Password
 
 	return &response, nil
-
 }
 
 // PostFile save user file heandler
@@ -165,7 +164,7 @@ func (s GServer) PostFile(stream grpc.ClientStreamingServer[pb.PostFileRequest, 
 
 // GetFile get saved file heandler
 func (s GServer) GetFile(in *pb.GetDataRequest, stream grpc.ServerStreamingServer[pb.GetFileResponse]) error {
-	logger.Log.Info("Start PostFile")
+	logger.Log.Info("Start GetFile")
 	rowID := in.RowId
 	ctx := stream.Context()
 	userID := getUserID(ctx)
@@ -178,4 +177,25 @@ func (s GServer) GetFile(in *pb.GetDataRequest, stream grpc.ServerStreamingServe
 	}
 	logger.Log.Info("Finish GetFile", zap.Uint64("FileSize", fileSize))
 	return nil
+}
+
+func (s GServer) GetDataInfo(ctx context.Context, in *pb.GetDataInfoRequest) (*pb.GetDataInfoResponse, error) {
+	var response pb.GetDataInfoResponse
+	userID := getUserID(ctx)
+	if userID == "" {
+		return &response, status.Errorf(codes.PermissionDenied, "Отсутствует токен/Не определен пользователь")
+	}
+	dataInfos, err := s.serv.GetDataInfo(ctx, userID, int(in.DataType))
+	if err != nil {
+		return &response, err
+	}
+	results := make([]*pb.DataInfo, len(dataInfos))
+	for i, dataInfo := range dataInfos {
+		results[i].RowId = dataInfo.RowID
+		results[i].Desc = dataInfo.Desc
+		results[i].DataType = dataInfo.DataType
+	}
+	response = pb.GetDataInfoResponse{UserData: results}
+	return &response, nil
+
 }

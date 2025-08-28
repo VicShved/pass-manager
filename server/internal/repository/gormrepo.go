@@ -148,3 +148,18 @@ func (r GormRepository) GetUserData(ctx context.Context, userID string, rowID ui
 	result := r.DB.WithContext(ctx).Where(&UserData{ID: uint(rowID), UserID: user.ID}).First(&userData)
 	return userData, result.Error
 }
+
+// GetUserDatas return array user data
+func (r GormRepository) GetUserDatas(ctx context.Context, userID string, dataType string) ([]UserData, error) {
+	user, err := r.GetUserByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	var userDatas []UserData
+	filter := UserData{UserID: user.ID}
+	if dataType != "" {
+		filter.DataType = dataType
+	}
+	result := r.DB.WithContext(ctx).Where(&filter).Find(&userDatas)
+	return userDatas, result.Error
+}

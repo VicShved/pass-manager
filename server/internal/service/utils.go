@@ -23,6 +23,12 @@ func GetNewUUID() (string, error) {
 	return string(id), err
 }
 
+type UserData struct {
+	RowID    uint32
+	Desc     string
+	DataType string
+}
+
 // custClaims struct
 type custClaims struct {
 	jwt.RegisteredClaims
