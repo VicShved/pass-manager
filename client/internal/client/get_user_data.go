@@ -18,7 +18,7 @@ type userData struct {
 	dataType string
 }
 
-// DoGetCard Получение данных карты
+// DoGetUserData Получение данных
 func (c GClient) DoGetUserData(tokenStr string, dataType int32) (grpcStatus codes.Code, results []userData, err error) {
 	ctx := context.Background()
 	conn, err := c.getConnection()
