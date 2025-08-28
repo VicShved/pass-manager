@@ -1,0 +1,8 @@
+proto < ./api.proto
+
+###
+GRPC localhost:8080/PassManager/Register
+{
+    "login": "11",
+    "password": "bce.ru"
+}

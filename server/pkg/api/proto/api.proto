@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "api/proto";
+
+message Empty {
+
+}
+
+message LoginRequest {
+    string login = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    string token = 1;
+}
+
+message PostCardRequest {
+    string  card_number = 1;
+    string  valid = 2;
+    string  code = 3;
+    string description = 4;
+}
+
+message PostDataResponse {
+    uint32 row_id = 1;
+    uint64 length = 2;
+}
+
+message GetDataRequest {
+    uint32 row_id = 1;
+}
+
+message GetCardResponse {
+    string  card_number = 1;
+    string  valid = 2;
+    string  code = 3;
+}
+
+message PostLogPassRequest {
+    string  login = 1;
+    string  password = 2;
+    string description = 3;
+}
+
+message GetLogPassResponse {
+    string  login = 1;
+    string  password = 2;
+}
+
+message PostFileRequest {
+    bytes chunk = 1;
+    string file_name = 2;
+    string description = 3;
+}
+
+message GetFileResponse {
+    bytes chunk = 1;
+    string file_name = 2;
+}
+
+enum DataType {
+    TYPE_ANY = 0;
+    TYPE_LOGPASS = 1;
+    TYPE_CARD = 2;
+    TYPE_FILE = 3;
+}
+
+message GetDataInfoRequest {
+    DataType data_type = 1;
+}
+
+message DataInfo {
+    uint32 row_id = 1;
+    string data_type = 2;
+    string desc = 3;
+    string file_name = 4;
+}
+message GetDataInfoResponse {
+    repeated DataInfo user_data = 1;
+}
+
+service PassManagerService {
+    rpc Register(LoginRequest) returns (LoginResponse);
+    rpc Login(LoginRequest) returns (LoginResponse);
+    rpc PostCard(PostCardRequest) returns (PostDataResponse);
+    rpc GetCard(GetDataRequest) returns (GetCardResponse);
+    rpc PostLogPass(PostLogPassRequest) returns (PostDataResponse);
+    rpc GetLogPass(GetDataRequest) returns (GetLogPassResponse);
+    rpc PostFile(stream PostFileRequest) returns (PostDataResponse);
+    rpc GetFile(GetDataRequest) returns (stream GetFileResponse);
+    rpc GetDataInfo(GetDataInfoRequest) returns (GetDataInfoResponse);
+}
+
