@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// DoSaveLogPass save login and password to server
+// DoSaveLogPass save login and password on server
 func (c GClient) DoSaveLogPass(tokenStr string, login string, password string, description string) (gprcStatus codes.Code, rowID uint32, err error) {
 	ctx := context.Background()
 	conn, err := c.getConnection()

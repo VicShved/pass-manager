@@ -27,6 +27,7 @@ func getUserID(ctx context.Context) string {
 	return userID
 }
 
+// Register user register handler
 func (s GServer) Register(ctx context.Context, in *pb.LoginRequest) (*pb.LoginResponse, error) {
 	var response pb.LoginResponse
 	// Validate login / password
@@ -47,6 +48,7 @@ func (s GServer) Register(ctx context.Context, in *pb.LoginRequest) (*pb.LoginRe
 	return &response, nil
 }
 
+// Login user handler
 func (s GServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginResponse, error) {
 	var response pb.LoginResponse
 	// Validate login / password
@@ -67,6 +69,7 @@ func (s GServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginRespo
 	return &response, nil
 }
 
+// PostCard save card handler
 func (s GServer) PostCard(ctx context.Context, in *pb.PostCardRequest) (*pb.PostDataResponse, error) {
 	var response pb.PostDataResponse
 	userID := getUserID(ctx)
@@ -84,6 +87,7 @@ func (s GServer) PostCard(ctx context.Context, in *pb.PostCardRequest) (*pb.Post
 	return &response, nil
 }
 
+// PostLogPass save login/password handler
 func (s GServer) PostLogPass(ctx context.Context, in *pb.PostLogPassRequest) (*pb.PostDataResponse, error) {
 	var response pb.PostDataResponse
 	userID := getUserID(ctx)
@@ -101,6 +105,7 @@ func (s GServer) PostLogPass(ctx context.Context, in *pb.PostLogPassRequest) (*p
 	return &response, nil
 }
 
+// GetCard get saved card data handler
 func (s GServer) GetCard(ctx context.Context, in *pb.GetDataRequest) (*pb.GetCardResponse, error) {
 	var response pb.GetCardResponse
 	userID := getUserID(ctx)
@@ -119,6 +124,7 @@ func (s GServer) GetCard(ctx context.Context, in *pb.GetDataRequest) (*pb.GetCar
 
 }
 
+// GetLogPass get saved login/password data heandle
 func (s GServer) GetLogPass(ctx context.Context, in *pb.GetDataRequest) (*pb.GetLogPassResponse, error) {
 	var response pb.GetLogPassResponse
 	userID := getUserID(ctx)
@@ -133,9 +139,9 @@ func (s GServer) GetLogPass(ctx context.Context, in *pb.GetDataRequest) (*pb.Get
 	response.Password = logPass.Password
 
 	return &response, nil
-
 }
 
+// PostFile save user file heandler
 func (s GServer) PostFile(stream grpc.ClientStreamingServer[pb.PostFileRequest, pb.PostDataResponse]) error {
 	logger.Log.Info("Start PostFile")
 	var rowID uint32
@@ -156,8 +162,9 @@ func (s GServer) PostFile(stream grpc.ClientStreamingServer[pb.PostFileRequest, 
 	})
 }
 
+// GetFile get saved file heandler
 func (s GServer) GetFile(in *pb.GetDataRequest, stream grpc.ServerStreamingServer[pb.GetFileResponse]) error {
-	logger.Log.Info("Start PostFile")
+	logger.Log.Info("Start GetFile")
 	rowID := in.RowId
 	ctx := stream.Context()
 	userID := getUserID(ctx)
@@ -170,4 +177,25 @@ func (s GServer) GetFile(in *pb.GetDataRequest, stream grpc.ServerStreamingServe
 	}
 	logger.Log.Info("Finish GetFile", zap.Uint64("FileSize", fileSize))
 	return nil
+}
+
+func (s GServer) GetDataInfo(ctx context.Context, in *pb.GetDataInfoRequest) (*pb.GetDataInfoResponse, error) {
+	var response pb.GetDataInfoResponse
+	userID := getUserID(ctx)
+	if userID == "" {
+		return &response, status.Errorf(codes.PermissionDenied, "Отсутствует токен/Не определен пользователь")
+	}
+	dataInfos, err := s.serv.GetDataInfo(ctx, userID, int(in.DataType))
+	if err != nil {
+		return &response, err
+	}
+	results := make([]*pb.DataInfo, len(dataInfos))
+	for i, dataInfo := range dataInfos {
+		results[i].RowId = dataInfo.RowID
+		results[i].Desc = dataInfo.Desc
+		results[i].DataType = dataInfo.DataType
+	}
+	response = pb.GetDataInfoResponse{UserData: results}
+	return &response, nil
+
 }

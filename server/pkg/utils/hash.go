@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 )
 
+// HashSha256 return hash of input string
 func HashSha256(s string) string {
 	h := sha256.New()
 	h.Write([]byte(s))

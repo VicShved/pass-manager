@@ -6,9 +6,9 @@ import (
 	"github.com/rivo/tview"
 )
 
+// tuiApplication struct
 type tuiApplication struct {
 	tview.Application
-	// serverUrl string
 	tokenStr  string
 	client    *client.GClient
 	version   string

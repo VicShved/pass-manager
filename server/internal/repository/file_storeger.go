@@ -1,10 +1,10 @@
 package repository
 
 import (
-	// "io"
 	"os"
 )
 
+// FileStoragerRepoInterface interface
 type FileStoragerRepoInterface interface {
 	GetFileStorage(fileName string) (FileStoragerInterface, error)
 }

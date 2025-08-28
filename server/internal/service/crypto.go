@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const lecretKeyLength int = 32
+const secretKeyLength int = 32
 
 func generateRandom(size int) ([]byte, error) {
 	b := make([]byte, size)
@@ -49,24 +49,6 @@ func encryptData(source []byte, keyString string) (target []byte, err error) {
 }
 
 func encryptData2Hex(source []byte, keyString string) (target string, err error) {
-	// key := make([]byte, hex.DecodedLen(len([]byte(keyString))))
-	// hex.Decode(key, []byte(keyString))
-	// aesblock, err := aes.NewCipher(key)
-	// if err != nil {
-	// 	logger.Log.Error("encryptData", zap.Error(err))
-	// 	return target, err
-	// }
-
-	// aesgcm, err := cipher.NewGCM(aesblock)
-	// if err != nil {
-	// 	logger.Log.Error("encryptData", zap.Error(err))
-	// 	return target, err
-	// }
-
-	// nonce := key[len(key)-aesgcm.NonceSize():]
-
-	// t := aesgcm.Seal(nil, nonce, source, nil)
-
 	t, err := encryptData(source, keyString)
 	if err != nil {
 		return target, err

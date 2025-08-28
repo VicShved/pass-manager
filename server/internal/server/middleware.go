@@ -8,7 +8,6 @@ import (
 	"github.com/VicShved/pass-manager/server/pkg/logger"
 	"github.com/golang-jwt/jwt/v4"
 
-	// grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -47,10 +46,12 @@ type newStreamStruct struct {
 	ctx context.Context
 }
 
+// Context return stream context
 func (s newStreamStruct) Context() context.Context {
 	return s.ctx
 }
 
+// AuthStreamInterceptor get token from stream context, get userID from token and set userID to header (metaData)
 func AuthStreamInterceptor(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 	logger.Log.Debug("In authStreamInterceptor")
 	ctx := stream.Context()
@@ -63,6 +64,7 @@ func AuthStreamInterceptor(srv any, stream grpc.ServerStream, info *grpc.StreamS
 	return handler(srv, newStream)
 }
 
+// AuthUnaryInterceptor get token from context, get userID from token and set userID to header (metaData)
 func AuthUnaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	logger.Log.Debug("In authUnaryInterceptor")
 	userID := getUserFromContext(ctx)

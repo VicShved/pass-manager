@@ -17,6 +17,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// DoGetFile get file from server
 func (c GClient) DoGetFile(tokenStr string, rowID uint32) (grpcStatus codes.Code, fileName string, err error) {
 	var file *os.File
 	var fileSize int

@@ -6,11 +6,13 @@ import (
 	"time"
 )
 
+// LifeTimeModel for known of rows create & update
 type LifeTimeModel struct {
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime"`
 }
 
+// User model for manage users of application
 type User struct {
 	ID uint `gorm:"primarykey"`
 	LifeTimeModel
@@ -20,6 +22,7 @@ type User struct {
 	UserDatas    []UserData
 }
 
+// UserData for manage user data
 type UserData struct {
 	ID uint `gorm:"primarykey"`
 	LifeTimeModel
@@ -30,6 +33,7 @@ type UserData struct {
 	SecretKey   string `gorm:"size:1024"`
 }
 
+// DataType for user data
 type DataType string
 
 const (
@@ -38,6 +42,7 @@ const (
 	DataTypeFile          DataType = "file"
 )
 
+// Scan for DataType
 func (d *DataType) Scan(value interface{}) error {
 	if value == nil {
 		*d = ""
@@ -51,6 +56,7 @@ func (d *DataType) Scan(value interface{}) error {
 	return nil
 }
 
+// Valuefor DataType
 func (d DataType) Value() (driver.Value, error) {
 	if d == "" {
 		return nil, nil

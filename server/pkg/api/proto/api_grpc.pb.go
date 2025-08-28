@@ -27,6 +27,7 @@ const (
 	PassManagerService_GetLogPass_FullMethodName  = "/api.PassManagerService/GetLogPass"
 	PassManagerService_PostFile_FullMethodName    = "/api.PassManagerService/PostFile"
 	PassManagerService_GetFile_FullMethodName     = "/api.PassManagerService/GetFile"
+	PassManagerService_GetDataInfo_FullMethodName = "/api.PassManagerService/GetDataInfo"
 )
 
 // PassManagerServiceClient is the client API for PassManagerService service.
@@ -41,6 +42,7 @@ type PassManagerServiceClient interface {
 	GetLogPass(ctx context.Context, in *GetDataRequest, opts ...grpc.CallOption) (*GetLogPassResponse, error)
 	PostFile(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[PostFileRequest, PostDataResponse], error)
 	GetFile(ctx context.Context, in *GetDataRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[GetFileResponse], error)
+	GetDataInfo(ctx context.Context, in *GetDataInfoRequest, opts ...grpc.CallOption) (*GetDataInfoResponse, error)
 }
 
 type passManagerServiceClient struct {
@@ -143,6 +145,16 @@ func (c *passManagerServiceClient) GetFile(ctx context.Context, in *GetDataReque
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type PassManagerService_GetFileClient = grpc.ServerStreamingClient[GetFileResponse]
 
+func (c *passManagerServiceClient) GetDataInfo(ctx context.Context, in *GetDataInfoRequest, opts ...grpc.CallOption) (*GetDataInfoResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetDataInfoResponse)
+	err := c.cc.Invoke(ctx, PassManagerService_GetDataInfo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PassManagerServiceServer is the server API for PassManagerService service.
 // All implementations must embed UnimplementedPassManagerServiceServer
 // for forward compatibility.
@@ -155,6 +167,7 @@ type PassManagerServiceServer interface {
 	GetLogPass(context.Context, *GetDataRequest) (*GetLogPassResponse, error)
 	PostFile(grpc.ClientStreamingServer[PostFileRequest, PostDataResponse]) error
 	GetFile(*GetDataRequest, grpc.ServerStreamingServer[GetFileResponse]) error
+	GetDataInfo(context.Context, *GetDataInfoRequest) (*GetDataInfoResponse, error)
 	mustEmbedUnimplementedPassManagerServiceServer()
 }
 
@@ -188,6 +201,9 @@ func (UnimplementedPassManagerServiceServer) PostFile(grpc.ClientStreamingServer
 }
 func (UnimplementedPassManagerServiceServer) GetFile(*GetDataRequest, grpc.ServerStreamingServer[GetFileResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method GetFile not implemented")
+}
+func (UnimplementedPassManagerServiceServer) GetDataInfo(context.Context, *GetDataInfoRequest) (*GetDataInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDataInfo not implemented")
 }
 func (UnimplementedPassManagerServiceServer) mustEmbedUnimplementedPassManagerServiceServer() {}
 func (UnimplementedPassManagerServiceServer) testEmbeddedByValue()                            {}
@@ -336,6 +352,24 @@ func _PassManagerService_GetFile_Handler(srv interface{}, stream grpc.ServerStre
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type PassManagerService_GetFileServer = grpc.ServerStreamingServer[GetFileResponse]
 
+func _PassManagerService_GetDataInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDataInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PassManagerServiceServer).GetDataInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PassManagerService_GetDataInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PassManagerServiceServer).GetDataInfo(ctx, req.(*GetDataInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PassManagerService_ServiceDesc is the grpc.ServiceDesc for PassManagerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -366,6 +400,10 @@ var PassManagerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetLogPass",
 			Handler:    _PassManagerService_GetLogPass_Handler,
+		},
+		{
+			MethodName: "GetDataInfo",
+			Handler:    _PassManagerService_GetDataInfo_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

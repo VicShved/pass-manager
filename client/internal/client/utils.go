@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+// GClient struct for grpc client
 type GClient struct {
 	conf           config.ClientConfigStruct
 	transportCreds credentials.TransportCredentials
@@ -28,6 +29,7 @@ func getTLSCreds(serverAddress string) credentials.TransportCredentials {
 	return creds
 }
 
+// GetgClient get configurated grpc client
 func GetgClient(conf config.ClientConfigStruct) *GClient {
 	gClient.conf = conf
 	gClient.transportCreds = insecure.NewCredentials()

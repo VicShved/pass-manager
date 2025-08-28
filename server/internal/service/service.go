@@ -34,11 +34,12 @@ type PassManageService struct {
 	conf *config.ServerConfigStruct
 }
 
-// GetService(repo repository.RepoInterface, config)
+// GetService return prepared service
 func GetService(repo repository.RepoInterface, conf *config.ServerConfigStruct) *PassManageService {
 	return &PassManageService{repo: repo, conf: conf}
 }
 
+// Register register new user by login/password
 func (s *PassManageService) Register(ctx context.Context, login string, password string) (string, error) {
 	userID, _ := GetNewUUID()
 	err := (*s).repo.Register(ctx, userID, login, utils.HashSha256(password))
@@ -50,6 +51,7 @@ func (s *PassManageService) Register(ctx context.Context, login string, password
 	return tokenStr, err
 }
 
+// Login user by login/password
 func (s *PassManageService) Login(ctx context.Context, login string, password string) (string, error) {
 	userID, err := (*s).repo.Login(ctx, login, utils.HashSha256(password))
 	logger.Log.Debug("service.Login", zap.String("userID=", userID), zap.Error(err))
@@ -60,6 +62,7 @@ func (s *PassManageService) Login(ctx context.Context, login string, password st
 	return tokenStr, err
 }
 
+// SaveData save user data
 func (s *PassManageService) SaveData(
 	ctx context.Context,
 	userID string,
@@ -68,7 +71,7 @@ func (s *PassManageService) SaveData(
 	buf []byte,
 ) (rowID uint32, fileSize uint64, err error) {
 
-	secretKey, err := generateHexKeyString(lecretKeyLength)
+	secretKey, err := generateHexKeyString(secretKeyLength)
 	if err != nil {
 		return rowID, fileSize, err
 	}
@@ -104,6 +107,7 @@ func (s *PassManageService) SaveData(
 	return rowID, fileSize, err
 }
 
+// PostCard save card data
 func (s *PassManageService) PostCard(ctx context.Context, userID string, card CardStruct, description string) (uint32, uint64, error) {
 	var rowID uint32
 	var fileSize uint64
@@ -116,6 +120,7 @@ func (s *PassManageService) PostCard(ctx context.Context, userID string, card Ca
 	return rowID, fileSize, err
 }
 
+// PostLogPass save user login/password data
 func (s *PassManageService) PostLogPass(ctx context.Context, userID string, logPass LogPassStruct, description string) (uint32, uint64, error) {
 	var rowID uint32
 	var fileSize uint64
@@ -127,6 +132,7 @@ func (s *PassManageService) PostLogPass(ctx context.Context, userID string, logP
 	return rowID, fileSize, err
 }
 
+// GetData retirn user data
 func (s *PassManageService) GetData(ctx context.Context, userID string, rowID uint32) (buf []byte, err error) {
 	userData, err := s.repo.GetUserData(ctx, userID, rowID)
 	if err != nil {
@@ -150,6 +156,7 @@ func (s *PassManageService) GetData(ctx context.Context, userID string, rowID ui
 
 }
 
+// GetCard return user card data
 func (s *PassManageService) GetCard(ctx context.Context, userID string, rowID uint32) (card CardStruct, err error) {
 	buf, err := s.GetData(ctx, userID, rowID)
 	if err != nil {
@@ -159,6 +166,7 @@ func (s *PassManageService) GetCard(ctx context.Context, userID string, rowID ui
 	return card, err
 }
 
+// GetLogPass return user login/password data
 func (s *PassManageService) GetLogPass(ctx context.Context, userID string, rowID uint32) (logPass LogPassStruct, err error) {
 	buf, err := s.GetData(ctx, userID, rowID)
 	if err != nil {
@@ -168,6 +176,7 @@ func (s *PassManageService) GetLogPass(ctx context.Context, userID string, rowID
 	return logPass, err
 }
 
+// PostFile save user file
 func (s *PassManageService) PostFile(
 	ctx context.Context,
 	stream grpc.ClientStreamingServer[pb.PostFileRequest, pb.PostDataResponse],
@@ -215,6 +224,7 @@ func (s *PassManageService) PostFile(
 	return rowID, fileSize, nil
 }
 
+// GetFile return saved user file
 func (s *PassManageService) GetFile(
 	ctx context.Context,
 	userID string,
@@ -256,4 +266,26 @@ func (s *PassManageService) GetFile(
 		fileSize += uint64(n)
 	}
 	return fileSize, nil
+}
+
+func (s *PassManageService) GetDataInfo(ctx context.Context, userID string, dataType int) ([]UserData, error) {
+	convert := map[int]string{
+		0: "",
+		1: string(repository.DataTypeLoginPassword),
+		2: string(repository.DataTypeCard),
+		3: string(repository.DataTypeFile),
+	}
+	dataTypeStr := convert[dataType]
+	userDatas, err := s.repo.GetUserDatas(ctx, userID, dataTypeStr)
+	if err != nil {
+		return nil, err
+	}
+	results := make([]UserData, len(userDatas))
+	for i, ud := range userDatas {
+		results[i].RowID = uint32(ud.ID)
+		results[i].Desc = ud.Description
+		results[i].DataType = ud.DataType
+	}
+	return results, err
+
 }

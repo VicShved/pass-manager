@@ -55,7 +55,7 @@ func GetGormRepo(conf *config.ServerConfigStruct, fileStorageRepo FileStoragerRe
 	return repo, err
 }
 
-// Migrate()
+// Migrate data struct
 func (r *GormRepository) Migrate() error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
@@ -69,6 +69,7 @@ func (r GormRepository) CloseConn() error {
 	return sqlDB.Close()
 }
 
+// GetUserByUserID return User by userID
 func (r GormRepository) GetUserByUserID(ctx context.Context, userID string) (User, error) {
 	user := User{}
 	result := r.DB.WithContext(ctx).Where(&User{UserID: userID}).First(&user)
@@ -79,6 +80,7 @@ func (r GormRepository) GetUserByUserID(ctx context.Context, userID string) (Use
 	return user, nil
 }
 
+// Register new user login/password
 func (r GormRepository) Register(ctx context.Context, userID string, login string, hashPassword string) error {
 	logger.Log.Debug("", zap.String("login", login), zap.String("hashPassword", hashPassword))
 	user := User{UserID: userID, Login: login, HashPassword: hashPassword}
@@ -93,6 +95,7 @@ func (r GormRepository) Register(ctx context.Context, userID string, login strin
 	return result.Error
 }
 
+// Login user by login/password
 func (r GormRepository) Login(ctx context.Context, login string, hashPassword string) (string, error) {
 	user := User{}
 	result := r.DB.WithContext(ctx).Where(&User{Login: login, HashPassword: hashPassword}).First(&user)
@@ -107,10 +110,12 @@ func (r GormRepository) Login(ctx context.Context, login string, hashPassword st
 	return user.UserID, result.Error
 }
 
+// GetFileStorage return filestorage by filename
 func (r GormRepository) GetFileStorage(fileName string) (FileStoragerInterface, error) {
 	return r.fileRepo.GetFileStorage(fileName)
 }
 
+// SaveData save user data
 func (r GormRepository) SaveData(ctx context.Context, userID string, desc string, dataType string, fileName string, secretKey string) (rowID uint32, err error) {
 	user, err := r.GetUserByUserID(ctx, userID)
 	if err != nil {
@@ -132,6 +137,7 @@ func (r GormRepository) SaveData(ctx context.Context, userID string, desc string
 	return uint32(userData.ID), err
 }
 
+// GetUserData return user data
 func (r GormRepository) GetUserData(ctx context.Context, userID string, rowID uint32) (UserData, error) {
 	userData := UserData{}
 	user, err := r.GetUserByUserID(ctx, userID)
@@ -141,4 +147,19 @@ func (r GormRepository) GetUserData(ctx context.Context, userID string, rowID ui
 	logger.Log.Debug("GetUserData", zap.String("userID", userID), zap.Uint32("rowID", rowID))
 	result := r.DB.WithContext(ctx).Where(&UserData{ID: uint(rowID), UserID: user.ID}).First(&userData)
 	return userData, result.Error
+}
+
+// GetUserDatas return array user data
+func (r GormRepository) GetUserDatas(ctx context.Context, userID string, dataType string) ([]UserData, error) {
+	user, err := r.GetUserByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	var userDatas []UserData
+	filter := UserData{UserID: user.ID}
+	if dataType != "" {
+		filter.DataType = dataType
+	}
+	result := r.DB.WithContext(ctx).Where(&filter).Find(&userDatas)
+	return userDatas, result.Error
 }

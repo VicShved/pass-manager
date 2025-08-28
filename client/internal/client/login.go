@@ -14,6 +14,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// DoLogin login to server
 func (c GClient) DoLogin(login string, password string) (grpcStatus codes.Code, tokenStr string, err error) {
 	ctx := context.Background()
 	conn, err := c.getConnection()
